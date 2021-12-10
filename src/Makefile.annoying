@@ -1,0 +1,29 @@
+COMMON= ACJ.o Box.o Params.o SL2ACJ.o Complex.o roundoff.o
+CC=gcc
+COPTS= -Wall -fsigned-char
+# LIBS=-L. -lm
+
+ACJ.o: ACJ.h Complex.h roundoff.h Complex.inline ACJ.inline
+Complex.o: Complex.h roundoff.h Complex.inline
+SL2ACJ.o: SL2ACJ.h ACJ.h Complex.h roundoff.h Complex.inline ACJ.inline
+
+*.o: *.C
+	$(CC) $(COPTS) $^
+
+verify_cusp: verify_cusp.o $(COMMON)
+	$(CC) $(COPTS) verify_cusp.o $(COMMON) -o ../bin/verify_db
+
+simple_tree_cat: simple_tree_cat.o
+	$(CC) $(COPTS) simple_tree_cat.o -o ../bin/simple_tree_cat
+
+rootcat: rootcat.o
+	$(CC) $(COPTS) rootcat.o -o ../bin/rootcat
+
+# never optimize here, since the timing of arithmetic is important
+test_float.o: test_float.cpp roundoff.h
+	$(CC) -g -c test_float.cpp
+
+test_float: test_float.o roundoff.o roundoff.h
+	$(CC) $(COPTS) test_float.o roundoff.o -o test_float -lm
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
