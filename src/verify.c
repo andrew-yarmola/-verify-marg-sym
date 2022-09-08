@@ -19,24 +19,65 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             where[depth + 1] = '\0';
             verify(where, depth + 1, count_ptr);
             break; }
-        case '0': 
-        case '1': 
-        case '2': 
-        case '3': 
-        case '4': 
-        case '5': 
-        case '6': {
+        case '0':
+        case '1': { 
             verify_out_of_bounds(where, code[0]);
             break; }
-        case 'K': { // Line has format  K(word) - killer word
-            parse_word(code);
-            verify_killed(where, code);
+        case '2': { 
+            verify_meyerhoff(where, code[0]);
             break; }
-        case 'S': { // Line has format S(word) - g-length 7 word
-            parse_word(code);
-            verify_len(where, code, 7);
+        case '3': { // TODO maybe remove as only 914 boxes need 
+            verify_marg_lower_bound(where, code[0]);
             break; }
-        // We fail by default, guaranteeing completes on the tree
+        case 'a': { // Line has format  a(word) - killed_x_hits_y
+            parse_word(code);
+            verify_x_hits_y(where, code);
+            break; }
+        case 'A': { // Line has format  A(word) - killed_y_hits_x
+            parse_word(code);
+            verify_y_hits_x(where, code);
+            break; }
+        case 'x': { // Line has format  x(word) - killed_x_hits_x
+            parse_word(code);
+            verify_x_hits_x(where, code);
+            break; }
+        case 'y': { // Line has format  y(word) - killed_y_hits_y 
+            parse_word(code);
+            verify_y_hits_y(where, code);
+            break; }
+        case 'p': { // Line has format  p(word) - killed_x_not_cyclic 
+            parse_word(code);
+            verify_x_not_cyclic(where, code);
+            break; }
+        case 'P': { // Line has format  P(word) - killed_y_not_cyclic 
+            parse_word(code);
+            verify_y_not_cyclic(where, code);
+            break; }
+        case 'm': { // Line has format  m(word) - killed_move
+            parse_word(code);
+            verify_move(where, code);
+            break; }
+        case 'n': { // Line has format  n(word) - killed_w_ax_hits_sym_axis
+            parse_word(code);
+            verify_w_ax_hits_sym_axis(where, code);
+            break; }
+        case 'N': { // Line has format  N(word) - killed_w_ay_hits_sym_axis
+            parse_word(code);
+            verify_w_ay_hits_sym_axis(where, code);
+            break; }
+        case 'E': { // Line has format  E(word) - killed_impossible_relator
+            parse_word(code);
+            verify_impossible_relator(where, code);
+            break; }
+        case 'S': { // Line has format  S(word) - verified_symmetric_relator
+            parse_word(code);
+            verify_symmetric_relator(where, code);
+            break; }
+        case 'T': { // Line has format  T(first, second) - verified_vol3_relator_pair
+            word_pair pair = get_word_pair(code);
+            verify_vol3(where, pair.first, pair.second);
+            break; }
+        // We fail by default, guaranteeing completes of the tree
         default: {
             check(false, where);
         }

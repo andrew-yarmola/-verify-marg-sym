@@ -17,8 +17,6 @@ struct AComplex {
 
 inline const XComplex operator-(const XComplex& x);
 inline const XComplex conj(const XComplex& x);
-inline const XComplex re(const XComplex& x);
-inline const XComplex im(const XComplex& x);
 inline const AComplex operator+(const AComplex& x,const AComplex& y);
 inline const AComplex operator+(const XComplex& x,const XComplex& y);
 inline const AComplex operator+(const XComplex& x,double y);

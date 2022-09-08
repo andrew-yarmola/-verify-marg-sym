@@ -1,6 +1,6 @@
 #ifndef _box_h_
 #define _box_h_
-#include "AJCC.h"
+#include "arithmetic/AJCC.h"
 
 // Our root box has center (0,0,0,0) and sides of length
 // 2 * (2, 2^(3/4), 2^(2/4), 2^(1/4)). The last is > 2.37
