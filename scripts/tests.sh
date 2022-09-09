@@ -18,9 +18,9 @@ function check_test {
 pushd ../bin > /dev/null
 
 # Run all tests
-check_test ./test_powers
-check_test ./test_underflow
-check_test ./test_overflow
+check_test ../bin/test_powers
+check_test ../bin/test_underflow
+check_test ../bin/test_overflow
 
 popd > /dev/null
 

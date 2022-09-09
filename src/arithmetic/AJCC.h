@@ -29,6 +29,9 @@ struct AJCC {
 	double size;
 };
 
+
+void print_type(const AJCC& x);
+
 inline const AJCC eye(const AJCC& x) { return AJCC(XComplex(0,1)); };
 inline const AJCC operator-(const AJCC& x);
 inline const AJCC conj(const AJCC& x);

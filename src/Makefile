@@ -9,8 +9,8 @@ rootcat: rootcat.o
 	$(CC) rootcat.o -o ../bin/rootcat
 
 # never optimize here, since the timing of arithmetic is important
-tests: test_underflow.o test_overflow.o test_powers.o roundoff.o
-	$(CC) test_underflow.o roundoff.o -o ../bin/test_underflow
-	$(CC) test_overflow.o roundoff.o -o ../bin/test_overflow
-	$(CC) test_powers.o roundoff.o -o ../bin/test_powers
+tests: test_underflow.o test_overflow.o test_powers.o arithmetic/roundoff.o
+	$(CC) test_underflow.o arithmetic/roundoff.o -o ../bin/test_underflow
+	$(CC) test_overflow.o arithmetic/roundoff.o -o ../bin/test_overflow
+	$(CC) test_powers.o arithmetic/roundoff.o -o ../bin/test_powers
 

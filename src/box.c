@@ -100,13 +100,13 @@ Box build_box(const char* where) {
   // Global scaling of boxes - runs once
   if (!shape_initialized) {
     for (int i = 0; i < DIM; ++i) {
-      shape[i] = pow(2, -i / DIM);
+      shape[i] = pow(2, -i / float(DIM));
     }
     shape_initialized = true;
   } 
   for (int i = 0; i < DIM; ++i) {
     box.center_digits[i] = 0;
-    box.size_digits[i] = 8;
+    box.size_digits[i] = SCL;
   }
   size_t pos = 0;
   size_t idx = 0;
@@ -132,4 +132,15 @@ Box build_box(const char* where) {
   compute_cover(box);
   compute_nearer(box);
   return box;    
+}
+
+void print_box(const Box& box) {
+  fprintf(stderr, "sinh(L/2) = %f + i %f with size %f, absLB %f, and absUB %f\n",
+                                  box.cover.sinhL2.f.re, box.cover.sinhL2.f.im, box.cover.sinhL2.size, absLB(box.cover.sinhL2), absUB(box.cover.sinhL2));
+  fprintf(stderr, "cosh(L/2) = %f + i %f with size %f, absLB %f, and absUB %f\n",
+                                  box.cover.coshL2.f.re, box.cover.coshL2.f.im, box.cover.coshL2.size, absLB(box.cover.coshL2), absUB(box.cover.coshL2));
+  fprintf(stderr, "sinh(D/2) = %f + i %f with size %f, absLB %f, and absUB %f\n",
+                                  box.cover.sinhD2.f.re, box.cover.sinhD2.f.im, box.cover.sinhD2.size, absLB(box.cover.sinhD2), absUB(box.cover.sinhD2));
+  fprintf(stderr, "cosh(D/2) = %f + i %f with size %f, absLB %f, and absUB %f\n",
+                                  box.cover.coshD2.f.re, box.cover.coshD2.f.im, box.cover.coshD2.size, absLB(box.cover.coshD2), absUB(box.cover.coshD2));
 }

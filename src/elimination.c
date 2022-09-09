@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -178,7 +179,7 @@ void parse_word(char* code)
   char buf[MAX_CODE_LEN];
   strncpy(buf, code, MAX_CODE_LEN);
   char * start = strchr(buf,'(');
-  char * end = strchr(buf,')');
+  char * end = strchr(buf,',');
   size_t len = end - start - 1;
   strncpy(code, start+1, len);
   code[len] = '\0'; 
@@ -223,11 +224,12 @@ SL2AJCC construct_word(const AJCCParams& params, const char* word) {
   SL2AJCC w; // identity
   SL2AJCC x = construct_x(params);
   SL2AJCC y = construct_y(params);
-
+  int len = strnlen(word, 64);
+  assert(len < 64);
   int x_pow = 0;
   int y_pow = 0;	
   size_t pos;
-  for (pos = strlen(word); pos > 0; --pos) {
+  for (pos = len; pos > 0; --pos) {
     char h = word[pos-1];
     switch(h) {
       case 'x': ++x_pow; break;
@@ -257,7 +259,8 @@ SL2AJCC construct_word(const AJCCParams& params, const char* word) {
 
 int x_power(const char* w) {
   int count = 0;
-  int len = strlen(w);
+  int len = strnlen(w, 64);
+  assert(len < 64);
   for (int p = 0; p < len; ++p) {
     if (w[p] == 'x' || w[p] == 'X') ++count;
   }
@@ -266,13 +269,28 @@ int x_power(const char* w) {
 
 int y_power(const char* w) {
   int count = 0;
-  int len = strlen(w);
+  int len = strnlen(w, 64);
+  assert(len < 64);
   for (int p = 0; p < len; ++p) {
     if (w[p] == 'y' || w[p] == 'Y') ++count;
   }
   return count;
 } 
 
+int syllables(const char* w) {
+  int count = 0;
+  int len = strnlen(w, 64);
+  assert(len < 64);
+  char cur = 'z'; // any char not in list
+  for (int p = 0; p < len; ++p) {
+      if (w[p] != tolower(cur) && w[p] != toupper(cur)) {
+        ++count;
+        cur = w[p];
+      }
+      fprintf(stderr, "%c\n", cur);
+  }
+  return count;
+} 
 
 // Elimination Tools
 //
@@ -507,6 +525,7 @@ inline const bool must_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
 
 inline const bool cant_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
   AJCC fsp2sq = four_sinh_perp2_sq_ay_way(w, p);
+  print_type(fsp2sq);
   // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
   return absLB(fsp2sq) > 0; 
 }
@@ -527,7 +546,7 @@ inline const bool inside_var_nbd_y(const SL2AJCC& w, const AJCCParams& params) {
 }
 
 inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC diff = p.coshmu - cosh_move_j(w);
+  AJCC diff = cosh_move_j(construct_x(p)) - cosh_move_j(w);
   return strictly_pos(diff); 
 }
 
@@ -545,13 +564,23 @@ inline bool non_cyclic_power(const SL2AJCC& w, const SL2AJCC& x_or_y) {
 void verify_out_of_bounds(const char* where, char bounds_code)
 {
   Box box = build_box(where);
+//  fprintf(stderr, "At %s\n", where); 
+//  print_box(box);
   AJCC one(1);
   switch(bounds_code) {
     case '0':	{ // 1.0052 < cosh(0.104) <= cosh(mu) <= 0.846
+                AJCC coshmu = cosh_move_j(construct_x(box.cover));
+//                print_type(coshmu);
+//                fprintf(stderr, "%f < %f\n", absUB(coshmu), g_cosh_marg_lower_bound);
+//                fprintf(stderr, "%f > %f\n", absLB(coshmu), g_cosh_marg_upper_bound);
+//                fprintf(stderr, "Check: %d\n",  
+//                    absUB(coshmu) < g_cosh_marg_lower_bound ||
+//                    absLB(coshmu) > g_cosh_marg_upper_bound);
                 check(
-                    absUB(box.cover.coshmu) < g_cosh_marg_lower_bound ||
-                    absLB(box.cover.coshmu) > g_cosh_marg_upper_bound,
+                    absUB(coshmu) < g_cosh_marg_lower_bound ||
+                    absLB(coshmu) > g_cosh_marg_upper_bound,
                     where);
+                break;
               }
     case '1': {
                 check(
@@ -561,6 +590,7 @@ void verify_out_of_bounds(const char* where, char bounds_code)
                     strictly_pos(one - box.cover.coshreD) ||
                     strictly_pos(one - box.cover.coshreL),
                     where);
+                break;
               }
     default: {
                check(false, where);
@@ -655,15 +685,26 @@ void verify_x_hits_x(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(inside_var_nbd_x(w, box.cover) &&
-      cant_fix_x_axis(w, box.cover),
+      (syllables(word) < 4 || cant_fix_x_axis(w, box.cover)),
       where);
 }
 
 void verify_y_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
+  fprintf(stderr, "At %s\n", where);
+  print_box(box);
+  fprintf(stderr, "generator x is\n");
+  print_type(construct_x(box.cover));
+  fprintf(stderr, "generator y is\n");
+  print_type(construct_y(box.cover));
+  fprintf(stderr, "word %s is\n", word);
+  print_type(w);
+  fprintf(stderr, "Check: (1) %d and (2) syl %d and %d\n",
+      inside_var_nbd_y(w, box.cover), syllables(word), cant_fix_y_axis(w, box.cover));  
+
   check(inside_var_nbd_y(w, box.cover) &&
-      cant_fix_y_axis(w, box.cover),
+      (syllables(word) < 4 || cant_fix_y_axis(w, box.cover)),
       where);
 }
 

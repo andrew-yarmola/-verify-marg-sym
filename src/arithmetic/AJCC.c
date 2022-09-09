@@ -1,5 +1,34 @@
 #include "AJCC.h"
 
+void double_to_hex(double x, char* buf)
+{
+  union {
+    double d;
+    long l[2];
+  } u;
+  u.d = x;
+  sprintf(buf, "'%0lx', '%0lx' (%.18f)", u.l[0], u.l[1], u.d);
+}
+
+void print_type(const AJCC& x) {
+  char absLBhex[100];
+  char absUBhex[100];
+  double_to_hex(absLB(x), absLBhex);
+  double_to_hex(absUB(x), absUBhex);
+	fprintf(stderr, "f: %.20f + %.20f I\n\
+z0: %.20f + %.20f I   w0: %.20f + %.20f I\n\
+z1: %.20f + %.20f I   w1: %.20f + %.20f I\n\
+err: %.40f\n\
+size: %.40f\n\
+absLB: %.20f | hex %s\n\
+abdUB: %.20f | hex %s\n", x.f.re, x.f.im,
+		   x.z0.re, x.z0.im, x.w0.re, x.w0.im,
+		   x.z1.re, x.z1.im, x.w1.re, x.w1.im,
+		   x.e, x.size,
+       absLB(x), absLBhex,
+       absUB(x), absUBhex);
+}
+
 const AJCC operator*(const AJCC&x,const AJCC&y) {
 
 	double xdist = size(x);

@@ -1,11 +1,15 @@
-#include "AJCC.h"
+#include "SL2.h"
 
-struct SL2AJCC {
-  AJCC a, b, c, d;
-  SL2AJCC(const AJCC &aa, const AJCC &bb, const AJCC &cc, const AJCC &dd) :
-    a(aa), b(bb), c(cc), d(dd) {}
-  SL2AJCC() : a(1), b(0), c(0), d(1) {}
-};
+void print_type(const SL2AJCC &M) {
+  fprintf(stderr, "a = ");
+  print_type(M.a);
+  fprintf(stderr, "b = ");
+  print_type(M.b);
+  fprintf(stderr, "c = ");
+  print_type(M.c);
+  fprintf(stderr, "d = ");
+  print_type(M.d);
+}
 
 const SL2AJCC operator*(const SL2AJCC &M, const SL2AJCC &N) {
   return SL2AJCC(

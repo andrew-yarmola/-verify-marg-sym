@@ -5,7 +5,7 @@
 // Our root box has center (0,0,0,0) and sides of length
 // 2 * (2, 2^(3/4), 2^(2/4), 2^(1/4)). The last is > 2.37
 #define DIM 4
-#define SIZ 2
+#define SCL 2
 
 typedef struct {
   XComplex sinhL2;
@@ -27,7 +27,6 @@ typedef struct {
   AJCC twocoshreD2;
   AJCC twosinhreD2;
   AJCC coshreD;
-  AJCC coshmu;
   AJCC coshreL;
   AJCC sinhreL;
   AJCC cosimL;
@@ -43,5 +42,7 @@ typedef struct {
 } Box;
 
 Box build_box(const char* where);
+
+void print_box(const Box& box);
 
 #endif // _box_h_
