@@ -140,7 +140,7 @@ char impossible[134][32] = {
     "XYXyXYXYXyXY",
     "xxxxyyxyyyxxxxyyxyyy",
     "xxYYYYxxxYxxYYYYxxxY"
-}
+};
 
 char symmetric[14][32] = {
     "xxYxyxyxY",
@@ -157,7 +157,7 @@ char symmetric[14][32] = {
     "YXYxYYxYX",
     "yxyyxyXyX",
     "XXXYYXXYXXYY"
-}
+};
 
 // Helper functions
 

@@ -1,36 +1,4 @@
 #include "AJCC.h"
-#include "types.hh"
-
-template<>
-void print_type<const AJCC>(const AJCC& x) {
-	fprintf(stderr, "f: %.20f + %.20f I\n\
-z0: %.20f + %.20f I   w0: %.20f + %.20f I\n\
-z1: %.20f + %.20f I   w1: %.20f + %.20f I\n\
-err: %.40f\n\
-size: %.40f\n\
-absLB: %.20f | hex %s\n\
-abdUB: %.20f | hex %s\n", x.f.re, x.f.im,
-		   x.z0.re, x.z0.im, x.w0.re, x.w0.im,
-		   x.z1.re, x.z1.im, x.w1.re, x.w1.im,
-		   x.e, x.size,
-       absLB(x), double_to_hex(absLB(x)).c_str(),
-       absUB(x), double_to_hex(absUB(x)).c_str());
-}
-
-template<>
-void print_type<AJCC>(AJCC& x) {
-  print_type((const AJCC) x);
-}
-
-template<>
-void print_center<const AJCC>(const AJCC& x) {
-	printf("f: %f + %f I\nabsLB: %f, abdUB: %f\n", x.f.re, x.f.im, absLB(x), absUB(x));
-}
-
-template<>
-bool sort_comp<AJCC>(const AJCC& a, const AJCC& b) {
-  return a.e < b.e;
-}
 
 const AJCC operator*(const AJCC&x,const AJCC&y) {
 
@@ -49,6 +17,7 @@ const AJCC operator*(const AJCC&x,const AJCC&y) {
 	return AJCC(r_f.z, r_z0.z, r_z1.z, r_w0.z, r_w1.z, r_error);
 
 }
+
 const AJCC operator/(const AJCC&x,const AJCC&y) {
 
 	double xdist = size(x);
@@ -69,6 +38,7 @@ const AJCC operator/(const AJCC&x,const AJCC&y) {
 	return AJCC(r_f.z, r_z0.z, r_z1.z, r_w0.z, r_w1.z, r_error);
 
 }
+
 const AJCC operator/(double x,const AJCC&y) {
 
 	double ydist = size(y);
@@ -87,6 +57,7 @@ const AJCC operator/(double x,const AJCC&y) {
 	return AJCC(r_f.z, r_z0.z, r_z1.z, r_w0.z, r_w1.z, r_error);
 
 }
+
 const AJCC sqrt(const AJCC&x) {
 
 	double xdist = size(x);

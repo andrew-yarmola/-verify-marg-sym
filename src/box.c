@@ -19,26 +19,39 @@ void compute_center_and_size(Box& box)
   }
 }
 
+void fill_derived(AJCCParams& p) {
+  AJCC one = AJCC(1);
+  p.sinhsqL2 = p.sinhL2 * p.sinhL2;
+  p.coshsqL2 = p.sinhsqL2 + one;
+  p.coshL2 = sqrt(p.coshsqL2); // TODO check if correct branch
+  p.sinhsqD2 = p.sinhD2 * p.sinhD2;
+  p.coshsqD2 = p.sinhsqD2 + one;
+  p.coshD2 = sqrt(p.coshsqD2); // TODO check if correct branch
+  
+  p.expD2 = p.coshD2 + p.sinhD2; 
+  p.expmD2 = p.coshD2 - p.sinhD2;
+
+  p.twocoshreD2 = abs(p.expD2) + abs(p.expmD2);
+  p.twosinhreD2 = abs(p.expD2) - abs(p.expmD2);
+  p.coshreD = abs(p.sinhsqD2) + abs(p.coshsqD2);
+  p.coshreL = abs(p.sinhsqL2) + abs(p.coshsqL2);
+  p.sinhreL = sqrt(p.coshreL * p.coshreL - one);
+  p.cosimL = abs(p.coshsqL2) - abs(p.sinhsqL2);
+}
+
 void compute_cover(Box& box)
 {
-  box.cover.lattice = ACJ(
-      XComplex(box.center[3], box.center[0]),
-      XComplex(box.size[3], box.size[0]),
-      0.,
-      0.
-      );
-  box.cover.loxodromic_sqrt = ACJ(
-      XComplex(box.center[4], box.center[1]),
-      0.,
-      XComplex(box.size[4], box.size[1]),
-      0.
-      );
-  box.cover.parabolic = ACJ(
-      XComplex(box.center[5], box.center[2]),
-      0.,
-      0.,
-      XComplex(box.size[5], box.size[2])
-      );
+  box.cover.sinhL2 = AJCC(XComplex(box.center[1], box.center[3]), 
+                     XComplex(box.size[1], box.size[3]), 0, 
+                     0, 0,
+                     0);
+
+  box.cover.sinhD2 = AJCC(XComplex(box.center[0], box.center[2]), 
+                     0, XComplex(box.size[0], box.size[2]),
+                     0, 0,
+                     0);
+
+  fill_derived(box.cover);
 }
 
 void compute_nearer(Box& box)
@@ -78,9 +91,8 @@ void compute_nearer(Box& box)
     }
   }
 
-  box.nearer.lattice = XComplex(m[3], m[0]);
-  box.nearer.loxodromic_sqrt = XComplex(m[4], m[1]);
-  box.nearer.parabolic = XComplex(m[5], m[2]);
+  box.nearer.sinhL2 = XComplex(m[1], m[3]);
+  box.nearer.sinhD2 = XComplex(m[0], m[2]);
 }
 
 Box build_box(char* where) {
@@ -88,7 +100,7 @@ Box build_box(char* where) {
   // Global scaling of boxes - runs once
   if (!shape_initialized) {
     for (int i = 0; i < DIM; ++i) {
-      shape[i] = pow(2, -i / DIM.0);
+      shape[i] = pow(2, -i / DIM);
     }
     shape_initialized = true;
   } 
@@ -120,24 +132,4 @@ Box build_box(char* where) {
   compute_cover(box);
   compute_nearer(box);
   return box;    
-}
-
-void fill_derived(ParamsAJCC& p) {
-  AJCC one = AJCC(1);
-  p.sinhsqL2 = p.sinhL2 * p.sinhL2;
-  p.coshsqL2 = p.sinhsqL2 + one;
-  p.coshL2 = sqrt(p.coshsqL2); // TODO check if correct branch
-  p.sinhsqD2 = p.sinhD2 * p.sinhD2;
-  p.coshsqD2 = p.sinhsqD2 + one;
-  p.coshD2 = sqrt(p.coshsqD2); // TODO check if correct branch
-  
-  p.expD2 = p.coshD2 + p.sinhD2; 
-  p.expmD2 = p.coshD2 - p.sinhD2;
-
-  p.twocoshreD2 = abs(p.expD2) + abs(p.expmD2);
-  p.twosinhreD2 = abs(p.expD2) - abs(p.expmD2);
-  p.coshreD = abs(p.sinhsqD2) + abs(p.coshsqD2);
-  p.coshreL = abs(p.sinhsqL2) + abs(p.coshsqL2);
-  p.sinhreL = sqrt(p.coshreL * p.coshreL - one);
-  p.cosimL = abs(p.coshsqL2) - abs(p.sinhsqL2);
 }
