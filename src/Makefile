@@ -1,6 +1,6 @@
 CC := g++ -std=c++1y -Wall -mfpmath=sse -mieee-fp -mno-fma -mno-fma4
 CXX := g++ -std=c++1y  -Wall -mfpmath=sse -mieee-fp -mno-fma -mno-fma4
-COMMON := arithmetic/AJCC.o box.o elimination.o arithmetic/Complex.o roundoff.o
+COMMON := arithmetic/AJCC.o arithmetic/SL2.o box.o elimination.o arithmetic/Complex.o arithmetic/roundoff.o
 
 verify: verify.o $(COMMON)
 	$(CC) verify.o $(COMMON) -lm -o ../bin/verify

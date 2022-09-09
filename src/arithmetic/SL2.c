@@ -1,6 +1,3 @@
-#ifndef _SL2AJCC_
-#define _SL2AJCC_
-
 #include "AJCC.h"
 
 struct SL2AJCC {
@@ -24,7 +21,7 @@ const AJCC dist(const SL2AJCC &M1, const SL2AJCC &M2) {
   return abs(M1.a - M2.a) + abs(M1.b - M2.b) + abs(M1.c - M2.c) + abs(M1.d - M2.d); 
 };
 
-inline const SL2AJCC pow(const SL2AJCC &M, int n) {
+const SL2AJCC pow(const SL2AJCC &M, int n) {
   SL2AJCC A; // identity
   if (n == 0) { return A; }
   SL2AJCC B;
@@ -43,5 +40,3 @@ inline const SL2AJCC pow(const SL2AJCC &M, int n) {
   } 
   return A*B;
 };
-
-#endif // _SL2AJCC_

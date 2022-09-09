@@ -1,7 +1,7 @@
 #ifndef _elimination_h_
 #define _elimination_h_
 #include "box.h"
-#include "arithmetic/SL2.hh"
+#include "arithmetic/SL2.h"
 
 #define MAX_DEPTH 256
 #define MAX_CODE_LEN 512
