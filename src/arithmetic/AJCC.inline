@@ -106,3 +106,4 @@ inline bool strictly_pos(const AJCC& diff) {
 inline const double size(const AJCC&x) {
   return x.size;
 }
+

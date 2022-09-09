@@ -10,35 +10,35 @@
 typedef struct {
   XComplex sinhL2;
   XComplex sinhD2;
-} ParamsX;
+} XParams;
 
 typedef struct {
-  T sinhL2;
-  T sinhD2;
+  AJCC sinhL2;
+  AJCC sinhD2;
   // derived parameters
-  T sinhsqL2;
-  T sinhsqD2;
-  T coshsqL2;
-  T coshsqD2;
-  T coshL2;
-  T coshD2;
-  T expD2;
-  T expmD2;
-  T twocoshreD2;
-  T twosinhreD2;
-  T coshreD;
-  T coshmu;
-  T coshreL;
-  T sinhreL;
-  T cosimL;
-} ParamsAJCC;
+  AJCC sinhsqL2;
+  AJCC sinhsqD2;
+  AJCC coshsqL2;
+  AJCC coshsqD2;
+  AJCC coshL2;
+  AJCC coshD2;
+  AJCC expD2;
+  AJCC expmD2;
+  AJCC twocoshreD2;
+  AJCC twosinhreD2;
+  AJCC coshreD;
+  AJCC coshmu;
+  AJCC coshreL;
+  AJCC sinhreL;
+  AJCC cosimL;
+} AJCCParams;
 
 typedef struct {
   double center_digits[DIM];
   double size_digits[DIM];
   double center[DIM];
   double size[DIM];
-  ACJParams cover;
+  AJCCParams cover;
   XParams nearer; // all values closer to 0 than in box or 0 if box overlaps
 } Box;
 

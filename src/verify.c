@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include "elimination.h"
 
-double g_max_area=5.24;
-
 void verify(char* where, size_t depth, size_t* count_ptr)
 {
     check(depth < MAX_DEPTH, where);
@@ -24,10 +22,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             verify_out_of_bounds(where, code[0]);
             break; }
         case '2': { 
-            verify_meyerhoff(where, code[0]);
-            break; }
-        case '3': { // TODO maybe remove as only 914 boxes need 
-            verify_marg_lower_bound(where, code[0]);
+            verify_meyerhoff(where);
             break; }
         case 'a': { // Line has format  a(word) - killed_x_hits_y
             parse_word(code);

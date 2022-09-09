@@ -42,7 +42,7 @@ inline const AJCC operator*(const AJCC& x,double y);
 inline const AJCC operator/(const AJCC& x,double y);
 inline const double absUB(const AJCC& x);
 inline const double absLB(const AJCC& x);
-inline bool strictly_pos(const AJCC& diff) {
+inline bool strictly_pos(const AJCC& diff);
 inline const AJCC abs_sqrd(const AJCC& x);
 inline const AJCC abs(const AJCC& x);
 inline const double size(const AJCC& x);

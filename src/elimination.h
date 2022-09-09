@@ -1,6 +1,7 @@
 #ifndef _elimination_h_
 #define _elimination_h_
 #include "box.h"
+#include "arithmetic/SL2.hh"
 
 #define MAX_DEPTH 256
 #define MAX_CODE_LEN 512
@@ -20,17 +21,15 @@ word_pair get_word_pair(const char* code);
 
 // Elimination functions
 
-SL2ACJ construct_x(const ACJParams& params);
+SL2AJCC construct_x(const AJCCParams& params);
 
-ACJ construct_T(const ACJParams& params, int M, int N);
+SL2AJCC construct_y(const AJCCParams& params);
 
-SL2ACJ construct_word(const ACJParams& params, const char* word);
+SL2AJCC construct_word(const AJCCParams& params, const char* word);
 
 void verify_out_of_bounds(const char* where, char bounds_code);
 
 void verify_meyerhoff(const char* where);
-
-void verify_marg_lower_bound(const char* where);
 
 void verify_x_hits_y(const char* where, const char* word);
 
