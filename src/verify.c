@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include "elimination.h"
 
+double g_cosh_marg_lower_bound = 1.0054;
+double g_cosh_marg_upper_bound = 1.38;
+double g_cosh_r_bound = 1.999;
+
 void verify(char* where, size_t depth, size_t* count_ptr)
 {
     check(depth < MAX_DEPTH, where);

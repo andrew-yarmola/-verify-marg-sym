@@ -42,6 +42,6 @@ typedef struct {
   XParams nearer; // all values closer to 0 than in box or 0 if box overlaps
 } Box;
 
-Box build_box(char* where);
+Box build_box(const char* where);
 
 #endif // _box_h_

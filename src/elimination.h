@@ -17,7 +17,7 @@ typedef struct {
     char second[MAX_CODE_LEN];
 } word_pair;
 
-word_pair get_word_pair(const char* code);
+word_pair get_word_pair(char* code);
 
 // Elimination functions
 

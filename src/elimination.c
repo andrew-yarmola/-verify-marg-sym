@@ -3,160 +3,162 @@
 #include <string.h>
 #include "elimination.h"
 
-extern double g_max_area;
+extern double g_cosh_marg_lower_bound;
+extern double g_cosh_marg_upper_bound;
+extern double g_cosh_r_bound;
 
 char impossible[134][32] = {
-    "xy",
-    "Xy",
-    "xyXY",
-    "xYXy",
-    "xYXY",
-    "XyXy",
-    "XYxY",
-    "XYXY",
-    "yxyx",
-    "yXYx",
-    "yXYX",
-    "YxYx",
-    "YXyX",
-    "xyXyx",
-    "XyxyX",
-    "yXYxy",
-    "xxyxxy",
-    "xxYxxY",
-    "XyXXXy",
-    "xyxxyx",
-    "xYxxYx",
-    "xyxyxy",
-    "xYXyXY",
-    "XyxyXY",
-    "XyxYxy",
-    "XyXyXy",
-    "XyXYxY",
-    "XYxYXy",
-    "XYXyxy",
-    "XYXYXY",
-    "XyyXyy",
-    "YXXYXX",
-    "YxyXyx",
-    "YxYXyX",
-    "YXyxyX",
-    "yyxyxY",
-    "yyXyXY",
-    "xxyXyxx",
-    "YXXYYXX",
-    "yxyXXyx",
-    "yxYXXYx",
-    "YxyXXyx",
-    "YxYXXYx",
-    "YxyXyxY",
-    "YxYXYxY",
-    "YXyxyXY",
-    "YXYxYXY",
-    "YYxyxYY",
-    "XXXYYYXX",
-    "xYXXyXXY",
-    "XYXXyXXY",
-    "xyXyxyXy",
-    "xYxyxyxY",
-    "xYxyxYxy",
-    "xYxyXyxY",
-    "xYxYXYxY",
-    "xYXYxYXY",
-    "XyxyXyxy",
-    "XYxYXYxY",
-    "XYXyxyXY",
-    "XYXyXyXY",
-    "XYXYxYXY",
-    "xYYxyxYY",
-    "XyyyXyxy",
-    "yXXYXXYY",
-    "yxxyXyxx",
-    "yxxYxYxx",
-    "yXXYXYXX",
-    "YxxyyxxY",
-    "YxxYYxxY",
-    "YXXyyXXY",
-    "YXXYYXXY",
-    "yxyxxxyx",
-    "yxyXyxyX",
-    "yXyxyXyx",
-    "YxYXYxYX",
-    "yXyyxyyX",
-    "YYxYxxYx",
-    "YYXYXXYX",
-    "yyyXyxyX",
-    "yyyxyxYY",
-    "xxyxxyxxy",
-    "xxYXXyXXY",
-    "XXYXXYXXY",
-    "xxYxyXyxY",
-    "XXYxYXYxY",
-    "XXYXyxyXY",
-    "xxYYxyxYY",
-    "xyxxyxxyx",
-    "xYXXYYXXY",
-    "XYxxYYxxY",
-    "xYYxYYxYY",
-    "XyyXyyXyy",
-    "yxxyxxyxx",
-    "YXXYXXYXX",
-    "YxYYxYYxY",
-    "yyxxyXyxx",
-    "yyXyyXyyX",
-    "XXXYxYXYxY",
-    "xxYxxYYxxY",
-    "xxYXXYYXXY",
-    "XXyxxyyxxy",
-    "XXYxxYYxxY",
-    "XXYXXYYXXY",
-    "xxYxYxxYxY",
-    "xxYXYxxYXY",
-    "XXyXyXXyXy",
-    "XXYXYXXYXY",
-    "xYxxYxYxxY",
-    "XYXXYXYXXY",
-    "xYXYxxYXYx",
-    "XyXyXXyXyX",
-    "xYxYxYxYxY",
-    "XyXyyxyyXy",
-    "XYXYYxYYXY",
-    "XYYXYxYXYY",
-    "YxxxYYxxxY",
-    "YXXXyyXXXY",
-    "YXXXYYXXXY",
-    "yXXyXYXyXX",
-    "YxYXyyXYxY",
-    "YXyXYYXyXY",
-    "YXYxyyxYXY",
-    "YYXyXYYXyX",
-    "XXyyXYxYXyy",
-    "XXYYXyxyXYY",
-    "xxxYxYxxxYxY",
-    "xxxYXYxxxYXY",
-    "XXXYxYXXXYxY",
-    "XXXYXYXXXYXY",
-    "XyXYXyXyXYXy",
-    "XYXyXYXYXyXY",
-    "xxxxyyxyyyxxxxyyxyyy",
-    "xxYYYYxxxYxxYYYYxxxY"
+  "xy",
+  "Xy",
+  "xyXY",
+  "xYXy",
+  "xYXY",
+  "XyXy",
+  "XYxY",
+  "XYXY",
+  "yxyx",
+  "yXYx",
+  "yXYX",
+  "YxYx",
+  "YXyX",
+  "xyXyx",
+  "XyxyX",
+  "yXYxy",
+  "xxyxxy",
+  "xxYxxY",
+  "XyXXXy",
+  "xyxxyx",
+  "xYxxYx",
+  "xyxyxy",
+  "xYXyXY",
+  "XyxyXY",
+  "XyxYxy",
+  "XyXyXy",
+  "XyXYxY",
+  "XYxYXy",
+  "XYXyxy",
+  "XYXYXY",
+  "XyyXyy",
+  "YXXYXX",
+  "YxyXyx",
+  "YxYXyX",
+  "YXyxyX",
+  "yyxyxY",
+  "yyXyXY",
+  "xxyXyxx",
+  "YXXYYXX",
+  "yxyXXyx",
+  "yxYXXYx",
+  "YxyXXyx",
+  "YxYXXYx",
+  "YxyXyxY",
+  "YxYXYxY",
+  "YXyxyXY",
+  "YXYxYXY",
+  "YYxyxYY",
+  "XXXYYYXX",
+  "xYXXyXXY",
+  "XYXXyXXY",
+  "xyXyxyXy",
+  "xYxyxyxY",
+  "xYxyxYxy",
+  "xYxyXyxY",
+  "xYxYXYxY",
+  "xYXYxYXY",
+  "XyxyXyxy",
+  "XYxYXYxY",
+  "XYXyxyXY",
+  "XYXyXyXY",
+  "XYXYxYXY",
+  "xYYxyxYY",
+  "XyyyXyxy",
+  "yXXYXXYY",
+  "yxxyXyxx",
+  "yxxYxYxx",
+  "yXXYXYXX",
+  "YxxyyxxY",
+  "YxxYYxxY",
+  "YXXyyXXY",
+  "YXXYYXXY",
+  "yxyxxxyx",
+  "yxyXyxyX",
+  "yXyxyXyx",
+  "YxYXYxYX",
+  "yXyyxyyX",
+  "YYxYxxYx",
+  "YYXYXXYX",
+  "yyyXyxyX",
+  "yyyxyxYY",
+  "xxyxxyxxy",
+  "xxYXXyXXY",
+  "XXYXXYXXY",
+  "xxYxyXyxY",
+  "XXYxYXYxY",
+  "XXYXyxyXY",
+  "xxYYxyxYY",
+  "xyxxyxxyx",
+  "xYXXYYXXY",
+  "XYxxYYxxY",
+  "xYYxYYxYY",
+  "XyyXyyXyy",
+  "yxxyxxyxx",
+  "YXXYXXYXX",
+  "YxYYxYYxY",
+  "yyxxyXyxx",
+  "yyXyyXyyX",
+  "XXXYxYXYxY",
+  "xxYxxYYxxY",
+  "xxYXXYYXXY",
+  "XXyxxyyxxy",
+  "XXYxxYYxxY",
+  "XXYXXYYXXY",
+  "xxYxYxxYxY",
+  "xxYXYxxYXY",
+  "XXyXyXXyXy",
+  "XXYXYXXYXY",
+  "xYxxYxYxxY",
+  "XYXXYXYXXY",
+  "xYXYxxYXYx",
+  "XyXyXXyXyX",
+  "xYxYxYxYxY",
+  "XyXyyxyyXy",
+  "XYXYYxYYXY",
+  "XYYXYxYXYY",
+  "YxxxYYxxxY",
+  "YXXXyyXXXY",
+  "YXXXYYXXXY",
+  "yXXyXYXyXX",
+  "YxYXyyXYxY",
+  "YXyXYYXyXY",
+  "YXYxyyxYXY",
+  "YYXyXYYXyX",
+  "XXyyXYxYXyy",
+  "XXYYXyxyXYY",
+  "xxxYxYxxxYxY",
+  "xxxYXYxxxYXY",
+  "XXXYxYXXXYxY",
+  "XXXYXYXXXYXY",
+  "XyXYXyXyXYXy",
+  "XYXyXYXYXyXY",
+  "xxxxyyxyyyxxxxyyxyyy",
+  "xxYYYYxxxYxxYYYYxxxY"
 };
 
 char symmetric[14][32] = {
-    "xxYxyxyxY",
-    "XXYXyXyXY",
-    "xxyyxxYxY",
-    "XXyyXXYXY",
-    "XXYYXXyXy",
-    "XXYYxYxYY",
-    "xYxyxxyxY",
-    "XyXyXYXXY",
-    "XyxyyxyXy",
-    "XyyxxyyXy",
-    "YxYXYXYxY",
-    "YXYxYYxYX",
-    "yxyyxyXyX",
-    "XXXYYXXYXXYY"
+  "xxYxyxyxY",
+  "XXYXyXyXY",
+  "xxyyxxYxY",
+  "XXyyXXYXY",
+  "XXYYXXyXy",
+  "XXYYxYxYY",
+  "xYxyxxyxY",
+  "XyXyXYXXY",
+  "XyxyyxyXy",
+  "XyyxxyyXy",
+  "YxYXYXYxY",
+  "YXYxYYxYX",
+  "yxyyxyXyX",
+  "XXXYYXXYXXYY"
 };
 
 // Helper functions
@@ -183,7 +185,7 @@ void parse_word(char* code)
 }
 
 // Returns a word pair encoded in code
-word_pair get_word_pair(const char* code)
+word_pair get_word_pair(char* code)
 {
   word_pair pair;
   char * start = strchr(code,'(');
@@ -222,7 +224,6 @@ SL2AJCC construct_word(const AJCCParams& params, const char* word) {
   SL2AJCC x = construct_x(params);
   SL2AJCC y = construct_y(params);
 
-  char h;
   int x_pow = 0;
   int y_pow = 0;	
   size_t pos;
@@ -254,7 +255,43 @@ SL2AJCC construct_word(const AJCCParams& params, const char* word) {
   return w;
 }
 
+int x_power(const char* w) {
+  int count = 0;
+  int len = strlen(w);
+  for (int p = 0; p < len; ++p) {
+    if (w[p] == 'x' || w[p] == 'X') ++count;
+  }
+  return count;
+} 
+
+int y_power(const char* w) {
+  int count = 0;
+  int len = strlen(w);
+  for (int p = 0; p < len; ++p) {
+    if (w[p] == 'y' || w[p] == 'Y') ++count;
+  }
+  return count;
+} 
+
+
 // Elimination Tools
+//
+inline const AJCC mobius(const SL2AJCC &x, const AJCC &p) {
+  return ((x.a * p) + x.b) / ((x.c * p) + x.d);
+}
+
+const AJCC four_cosh_re_length(const SL2AJCC& w) {
+  AJCC tr = w.a + w.d;
+  return abs_sqrd(tr) + abs(tr*tr - 4);
+}
+
+const AJCC two_cosh_dist(const AJCC& two_sinh_sq_perp2) {
+  return abs(two_sinh_sq_perp2 + 2) + abs(two_sinh_sq_perp2);
+}
+
+const AJCC four_cosh_dist(const AJCC& four_sinh_sq_perp2) {
+  return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
+}
 
 const AJCC jorgensen_xw(const SL2AJCC& w, const AJCCParams& p) {
   AJCC shLx2 = p.sinhL2;
@@ -342,39 +379,39 @@ const AJCC four_cosh_dist_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
 
 // 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
 inline const AJCC two_sinh_perp2_sq_wax_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC one = T(1);
+  AJCC one = AJCC(1);
   return (w.b * w.d) * p.expD2 - (w.a * w.c) * p.expmD2 - one; 
 }
 
 // 2 sinh^2(half complex distance between w(axis(y)) and (0, inf)) 
 inline const AJCC two_sinh_perp2_sq_way_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC one = T(1);
+  AJCC one = AJCC(1);
   return (w.b * w.d) * p.expmD2 - (w.a * w.c) * p.expD2 - one; 
 }
 
 // 2 sinh^2(half complex distance between w(axis(x)) and (-1, 1)) 
 inline const AJCC four_sinh_perp2_sq_wax_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = T(2);
+  AJCC two = AJCC(2);
   return (w.d * w.d - w.b * w.b) * p.expD2 + (w.a * w.a - w.c * w.c) * p.expmD2 - two; 
 }
 
 // 2 sinh^2(half complex distance between w(axis(y)) and (-1, 1)) 
 inline const AJCC four_sinh_perp2_sq_way_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = T(2);
+  AJCC two = AJCC(2);
   return (w.d * w.d - w.b * w.b) * p.expmD2 + (w.a * w.a - w.c * w.c) * p.expD2 - two; 
 }
 
 // 2 sinh^2(half complex distance between w(axis(x)) and (-i, i)) 
 inline const AJCC four_sinh_perp2_sq_wax_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = T(2);
-  AJCC iye = eye(T(1));
+  AJCC two = AJCC(2);
+  AJCC iye = eye(AJCC(1));
   return ((w.d * w.d + w.b * w.b) * p.expD2 - (w.a * w.a + w.c * w.c) * p.expmD2) * iye - two; 
 }
 
 // 2 sinh^2(half complex distance between w(axis(y)) and (-i, i)) 
 inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = T(2);
-  AJCC iye = eye(T(1));
+  AJCC two = AJCC(2);
+  AJCC iye = eye(AJCC(1));
   return ((w.d * w.d + w.b * w.b) * p.expmD2 - (w.a * w.a + w.c * w.c) * p.expD2) * iye - two; 
 }
 
@@ -413,13 +450,13 @@ inline const bool not_identity(const SL2AJCC& w) {
     ((absLB(w.a-1) > 0 || absLB(w.d-1) > 0) && (absLB(w.a+1) > 0 || absLB(w.d+1) > 0));
 }
 
-inline const bool tube_hits_axis_two(const T& two_sinh_p2sq, const T& two_cosh_re_tube) {
+inline const bool tube_hits_axis_two(const AJCC& two_sinh_p2sq, const AJCC& two_cosh_re_tube) {
   AJCC tcd = two_cosh_dist(two_sinh_p2sq);
   // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
   return strictly_pos(two_cosh_re_tube - tcd) && absLB(two_sinh_p2sq + 1) > 0;
 }
 
-inline const bool tube_hits_axis_four(const T& four_sinh_p2sq, const T& two_cosh_re_tube) {
+inline const bool tube_hits_axis_four(const AJCC& four_sinh_p2sq, const AJCC& two_cosh_re_tube) {
   AJCC fcd = four_cosh_dist(four_sinh_p2sq);
   // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
   return strictly_pos(two_cosh_re_tube * 2 - fcd) && absLB(four_sinh_p2sq + 2) > 0;
@@ -503,30 +540,12 @@ inline bool non_cyclic_power(const SL2AJCC& w, const SL2AJCC& x_or_y) {
   return not_identity(commutator); 
 }
 
-#define MAX_ROOTS 8
-AJCC worst_primitive_cosh_re_len(const T& ch_o, const T& cs_o, const T& four_cosh_tube_diam_UB) {
-  // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
-  AJCC ch_prev = ch_o;
-  AJCC cs_prev = cs_o;
-  for (int i = 0; i < MAX_ROOTS; ++i) {
-    AJCC ch = sqrt((ch_prev + 1) / 2);
-    AJCC cs = sqrt((cs_prev + 1) / 2); // note, - pi <= Im(L) <= pi, so sign is +
-    if (meyerhoff_k_test(ch, cs, four_cosh_tube_diam_UB)) {
-      return ch_prev;
-    }
-    ch_prev = ch;
-    cs_prev = cs;
-  }
-  // no luck
-  AJCC zero(0);
-  return zero; 
-}
-
 // Our compact parameter space has the following bounds:
 // TODO
 void verify_out_of_bounds(const char* where, char bounds_code)
 {
   Box box = build_box(where);
+  AJCC one(1);
   switch(bounds_code) {
     case '0':	{ // 1.0052 < cosh(0.104) <= cosh(mu) <= 0.846
                 check(
@@ -551,14 +570,14 @@ void verify_out_of_bounds(const char* where, char bounds_code)
 
 // Meyerhoff k-test
 #define MAX_MEYER 8
-bool meyerhoff_k_test(const T& ch_o, const T& cs_o, const T& four_cosh_tube_diam_UB) {
+bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_diam_UB) {
   // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
-  AJCC ch_prev = T(1);
-  AJCC cs_prev = T(1);
+  AJCC ch_prev = AJCC(1);
+  AJCC cs_prev = AJCC(1);
   AJCC ch = ch_o;
   AJCC cs = cs_o;
   AJCC temp, four_cosh_tube_diam_LB;
-  AJCC meyer_k = T(1024); // arbitray large enough number
+  AJCC meyer_k = AJCC(1024); // arbitray large enough number
   int count = 0;
   while (absUB(ch * ch) < 2 && count < MAX_MEYER) {
     temp = ch - cs; 
@@ -582,17 +601,37 @@ bool meyerhoff_k_test(const T& ch_o, const T& cs_o, const T& four_cosh_tube_diam
   return false; // inconclusive
 }
 
+#define MAX_ROOTS 8
+AJCC worst_primitive_cosh_re_len(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_diam_UB) {
+  // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
+  AJCC ch_prev = ch_o;
+  AJCC cs_prev = cs_o;
+  for (int i = 0; i < MAX_ROOTS; ++i) {
+    AJCC ch = sqrt((ch_prev + 1) / 2);
+    AJCC cs = sqrt((cs_prev + 1) / 2); // note, - pi <= Im(L) <= pi, so sign is +
+    if (meyerhoff_k_test(ch, cs, four_cosh_tube_diam_UB)) {
+      return ch_prev;
+    }
+    ch_prev = ch;
+    cs_prev = cs;
+  }
+  // no luck
+  AJCC zero(0);
+  return zero; 
+}
+
 // Meyerhoff tube bound.
 // Checks if embeded tube about axis(x) is more than (dist(axis(x), y axis(x))
 // and similarly for axis(y)
 void verify_meyerhoff(const char* where) {
+  Box box = build_box(where);
   SL2AJCC x = construct_x(box.cover);
-  SL2AJCC y = construct_y(bpx.cover);
+  SL2AJCC y = construct_y(box.cover);
   AJCC four_cosh_x_tube_UB = four_cosh_dist_ax_wax(y, box.cover);
   AJCC four_cosh_y_tube_UB = four_cosh_dist_ay_way(x, box.cover);
   check(
-      meyerhoff_k_test(cover.coshreL, cover.cosimL, four_cosh_x_tube_UB) ||
-      meyerhoff_k_test(cover.coshreL, cover.cosimL, four_cosh_y_tube_UB),
+      meyerhoff_k_test(box.cover.coshreL, box.cover.cosimL, four_cosh_x_tube_UB) ||
+      meyerhoff_k_test(box.cover.coshreL, box.cover.cosimL, four_cosh_y_tube_UB),
       where);
 }
 
@@ -600,32 +639,32 @@ void verify_x_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(moves_x_axis_too_close_to_y(w, box.cover) &&
-        moved_x_axis_not_y_axis(w, box.cover),
-        where);
+      moved_x_axis_not_y_axis(w, box.cover),
+      where);
 }
 
 void verify_y_hits_x(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(moves_y_axis_too_close_to_x(w, box.cover) &&
-        moved_y_axis_not_x_axis(w, box.cover),
-        where);
+      moved_y_axis_not_x_axis(w, box.cover),
+      where);
 }
 
 void verify_x_hits_x(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(inside_var_nbd_x(w, box.cover) &&
-        cant_fix_x_axis(w, box.cover),
-        where);
+      cant_fix_x_axis(w, box.cover),
+      where);
 }
 
 void verify_y_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(inside_var_nbd_y(w, box.cover) &&
-        cant_fix_y_axis(w, box.cover),
-        where);
+      cant_fix_y_axis(w, box.cover),
+      where);
 }
 
 void verify_x_not_cyclic(const char* where, const char* word) {
@@ -633,8 +672,8 @@ void verify_x_not_cyclic(const char* where, const char* word) {
   SL2AJCC x = construct_x(box.cover);
   SL2AJCC w = construct_word(box.cover, word);
   check(inside_var_nbd_x(w, box.cover) &&
-        non_cyclic_power(w, x),
-        where);
+      non_cyclic_power(w, x),
+      where);
 }
 
 void verify_y_not_cyclic(const char* where, const char* word) {
@@ -642,37 +681,49 @@ void verify_y_not_cyclic(const char* where, const char* word) {
   SL2AJCC x = construct_x(box.cover);
   SL2AJCC w = construct_word(box.cover, word);
   check(inside_var_nbd_x(w, box.cover) &&
-        non_cyclic_power(w, x),
-        where);
+      non_cyclic_power(w, x),
+      where);
 }
 
 void verify_move(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(not_identity(w) &&
-        move_less_than_marg(w, p) &&
-        ((x_power(word) == 0 || y_power(word) == 0) || does_not_fix_sym_axis(w)),
-        where);
+      move_less_than_marg(w, box.cover) &&
+      ((x_power(word) == 0 || y_power(word) == 0) || does_not_fix_sym_axis(w)),
+      where);
 }
 
 void verify_w_ax_hits_sym_axis(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(wx_hits_sym_axis(w, box.cover),
-        where);
+      where);
 } 
- 
+
 void verify_w_ay_hits_sym_axis(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
   check(wy_hits_sym_axis(w, box.cover),
-        where);
+      where);
 } 
 
-inline bool word_in_array(const char* word, const char** array) {
-  int len = sizeof(array)/sizeof(array[0]);
+inline bool is_impossible(const char* word) {
+  int len = sizeof(impossible)/sizeof(impossible[0]);
+  assert(len == 134);
   for (int i = 0; i < len; ++i) {
-    if (strncmp(word, array[i], 32) == 0) {
+    if (strncmp(word, impossible[i], 32) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+inline bool is_symmetric_relator(const char* word) {
+  int len = sizeof(symmetric)/sizeof(symmetric[0]);
+  assert(len == 14);
+  for (int i = 0; i < len; ++i) {
+    if (strncmp(word, impossible[i], 32) == 0) {
       return true;
     }
   }
@@ -682,46 +733,45 @@ inline bool word_in_array(const char* word, const char** array) {
 bool is_proven_elementary(const char* word, const AJCCParams& p) {
   SL2AJCC x = construct_x(p);
   SL2AJCC y = construct_y(p);
-  SL2AJCC w = construct_word(word, p);
+  SL2AJCC w = construct_word(p, word);
   if (y_power(word) > 0 && inside_var_nbd_x(w, p)) {
     AJCC four_cosh_x_tube_UB = four_cosh_dist_ax_wax(y, p);
     AJCC cosh_prim_re_len = worst_primitive_cosh_re_len(p.coshreL, p.cosimL, four_cosh_x_tube_UB); 
     AJCC diff = cosh_prim_re_len * 4 - four_cosh_re_length(w);
-      if (strictly_pos(diff)) {
-        return true;
-      }      
-    }
+    if (strictly_pos(diff)) {
+      return true;
+    }      
+  }
   if (x_power(word) > 0 && inside_var_nbd_y(w, p)) {
     AJCC four_cosh_y_tube_UB = four_cosh_dist_ay_way(x, p);
     AJCC cosh_prim_re_len = worst_primitive_cosh_re_len(p.coshreL, p.cosimL, four_cosh_y_tube_UB); 
     AJCC diff = cosh_prim_re_len * 4 - four_cosh_re_length(w);
-      if (strictly_pos(diff)) {
-        return true;
-      }      
-    }
+    if (strictly_pos(diff)) {
+      return true;
+    }      
   }
   return false;
 }
 
 void verify_impossible_relator(const char* where, const char* word) {
   Box box = build_box(where);
-  check(word_in_array(word, impossible) &&
-        is_proven_elementary(word, box.cover),
-        where); 
+  check(is_impossible(word) &&
+      is_proven_elementary(word, box.cover),
+      where); 
 }
 
 void verify_symmetric_relator(const char* where, const char* word) {
   Box box = build_box(where);
-  check(word_in_array(word, symmetric) &&
-        is_proven_elementary(word, box.cover),
-        where); 
+  check(is_symmetric_relator(word) &&
+      is_proven_elementary(word, box.cover),
+      where); 
 }
 
 void verify_vol3(const char* where, const char* first, const char* second) {
   Box box = build_box(where);
-  check(strncmp(first, "XYXYxYXYXy") == 0 &&
-        strncmp(second, "yXYxYxyxYxYY") == 0 &&
-        is_proven_elementary(first, box.cover),
-        is_proven_elementary(second, box.cover),
-        where); 
+  check(strncmp(first, "XYXYxYXYXy", 32) == 0 &&
+      strncmp(second, "yXYxYxyxYxYY", 32) == 0 &&
+      is_proven_elementary(first, box.cover) &&
+      is_proven_elementary(second, box.cover),
+      where); 
 }

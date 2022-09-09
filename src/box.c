@@ -95,7 +95,7 @@ void compute_nearer(Box& box)
   box.nearer.sinhD2 = XComplex(m[0], m[2]);
 }
 
-Box build_box(char* where) {
+Box build_box(const char* where) {
   Box box;
   // Global scaling of boxes - runs once
   if (!shape_initialized) {
