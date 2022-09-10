@@ -31,6 +31,7 @@ struct AJCC {
 
 
 void print_type(const AJCC& x);
+void print_type(const char* desc, const AJCC &x);
 
 inline const AJCC eye(const AJCC& x) { return AJCC(XComplex(0,1)); };
 inline const AJCC operator-(const AJCC& x);

@@ -29,6 +29,11 @@ abdUB: %.20f | hex %s\n", x.f.re, x.f.im,
        absUB(x), absUBhex);
 }
 
+void print_type(const char* desc, const AJCC &x) {
+  fprintf(stderr, "%s\n", desc);
+  print_type(x);
+}  
+
 const AJCC operator*(const AJCC&x,const AJCC&y) {
 
 	double xdist = size(x);

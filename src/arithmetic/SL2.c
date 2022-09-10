@@ -1,15 +1,20 @@
 #include "SL2.h"
 
 void print_type(const SL2AJCC &M) {
-  fprintf(stderr, "a = ");
+  fprintf(stderr, "a =\n");
   print_type(M.a);
-  fprintf(stderr, "b = ");
+  fprintf(stderr, "b =\n");
   print_type(M.b);
-  fprintf(stderr, "c = ");
+  fprintf(stderr, "c =\n");
   print_type(M.c);
-  fprintf(stderr, "d = ");
+  fprintf(stderr, "d =\n");
   print_type(M.d);
 }
+
+void print_type(const char* desc, const SL2AJCC &M) {
+  fprintf(stderr, "%s\n", desc);
+  print_type(M);
+}  
 
 const SL2AJCC operator*(const SL2AJCC &M, const SL2AJCC &N) {
   return SL2AJCC(

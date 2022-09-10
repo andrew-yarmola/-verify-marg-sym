@@ -287,7 +287,6 @@ int syllables(const char* w) {
         ++count;
         cur = w[p];
       }
-      fprintf(stderr, "%c\n", cur);
   }
   return count;
 } 
@@ -387,12 +386,16 @@ const AJCC four_cosh_dist_ax_way(const SL2AJCC& w, const AJCCParams& p) {
 
 // 4 sinh^2(half complex distance between axis(y) and w(axis(x))) 
 const AJCC four_sinh_perp2_sq_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
-  return four_sinh_perp2_sq_ax_way(inverse(w), p);
+  AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
+    ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
+  return  z - 2;
 }
 
 // 4 cosh(real distance between axis(x) and w(axis(y))) 
 const AJCC four_cosh_dist_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
-  return four_cosh_dist_ax_way(inverse(w), p);
+  AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
+    ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
+  return  abs(z - 2) + abs(z + 2);
 }
 
 // 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
@@ -435,6 +438,22 @@ inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCPara
 
 inline const bool moves_y_axis_too_close_to_x(const SL2AJCC& w, const AJCCParams& p) {
   AJCC diff = p.coshreD * 4 - four_cosh_dist_ax_way(w, p);
+  if (!strictly_pos(diff)) {
+    fprintf(stderr, "****************************************\n");
+    fprintf(stderr, "MOVES Y TOO CLOSE TO X\n");
+    print_type(w);
+    print_type("4cosh(dx+dy):", p.coshreD * 4);
+    print_type("4coshd(dist(x-axis, w(y-axis))):", four_cosh_dist_ax_way(w, p)); 
+    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
+      ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
+    print_type("4 sinh^2(dist/2) + 2:", z);
+    print_type("|4 sinh^2(dist/2)|:", abs(z - 2));
+    print_type("|4 cosh^2(dist/2)|:", abs(z + 2));
+    print_type("4 cosh(dist):",  abs(z - 2) + abs(z + 2));
+    print_type("diff:", diff);
+    fprintf(stderr, "diff is positive: %d\n", strictly_pos(diff));
+    fprintf(stderr, "****************************************\n");
+  }
   // We know that diff is away from zero and the diff should be conj symmetrix, so
   // we only test if the real part is to one side of the bound
   return strictly_pos(diff);
@@ -444,6 +463,22 @@ inline const bool moves_x_axis_too_close_to_y(const SL2AJCC& w, const AJCCParams
   AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_wax(w, p);
   // We know that diff is away from zero and the diff should be conj symmetrix, so
   // we only test if the real part is to one side of the bound
+  if (!strictly_pos(diff)) {
+    fprintf(stderr, "****************************************\n");
+    fprintf(stderr, "MOVES X TOO CLOSE TO Y\n");
+    print_type(w);
+    print_type("4cosh(dx+dy):", p.coshreD * 4);
+    print_type("4coshd(dist(y-axis, w(x-axis))):", four_cosh_dist_ay_wax(w, p)); 
+    AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
+      ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
+    print_type("4 sinh^2(dist/2) + 2:", z);
+    print_type("|4 sinh^2(dist/2)|:", abs(z - 2));
+    print_type("|4 cosh^2(dist/2)|:", abs(z + 2));
+    print_type("4 cosh(dist):",  abs(z - 2) + abs(z + 2));
+    print_type("diff:", diff);
+    fprintf(stderr, "diff is positive: %d\n", strictly_pos(diff));
+    fprintf(stderr, "****************************************\n");
+  }
   return strictly_pos(diff);
 }
 
@@ -668,6 +703,20 @@ void verify_meyerhoff(const char* where) {
 void verify_x_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
+  if (!(moves_x_axis_too_close_to_y(w, box.cover) &&
+      moved_x_axis_not_y_axis(w, box.cover))) {
+    fprintf(stderr, "At %s\n", where);
+    print_box(box);
+    fprintf(stderr, "generator x is\n");
+    print_type(construct_x(box.cover));
+    fprintf(stderr, "generator y is\n");
+    print_type(construct_y(box.cover));
+    fprintf(stderr, "word %s is\n", word);
+    print_type(w);
+    fprintf(stderr, "Check: (1) %d and (2) %d\n",
+        moves_x_axis_too_close_to_y(w, box.cover), 
+        moved_x_axis_not_y_axis(w, box.cover));
+  }
   check(moves_x_axis_too_close_to_y(w, box.cover) &&
       moved_x_axis_not_y_axis(w, box.cover),
       where);
@@ -692,17 +741,16 @@ void verify_x_hits_x(const char* where, const char* word) {
 void verify_y_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
-  fprintf(stderr, "At %s\n", where);
-  print_box(box);
-  fprintf(stderr, "generator x is\n");
-  print_type(construct_x(box.cover));
-  fprintf(stderr, "generator y is\n");
-  print_type(construct_y(box.cover));
-  fprintf(stderr, "word %s is\n", word);
-  print_type(w);
-  fprintf(stderr, "Check: (1) %d and (2) syl %d and %d\n",
-      inside_var_nbd_y(w, box.cover), syllables(word), cant_fix_y_axis(w, box.cover));  
-
+//  fprintf(stderr, "At %s\n", where);
+//  print_box(box);
+//  fprintf(stderr, "generator x is\n");
+//  print_type(construct_x(box.cover));
+//  fprintf(stderr, "generator y is\n");
+//  print_type(construct_y(box.cover));
+//  fprintf(stderr, "word %s is\n", word);
+//  print_type(w);
+//  fprintf(stderr, "Check: (1) %d and (2) syl %d and %d\n",
+//      inside_var_nbd_y(w, box.cover), syllables(word), cant_fix_y_axis(w, box.cover));  
   check(inside_var_nbd_y(w, box.cover) &&
       (syllables(word) < 4 || cant_fix_y_axis(w, box.cover)),
       where);
@@ -719,10 +767,10 @@ void verify_x_not_cyclic(const char* where, const char* word) {
 
 void verify_y_not_cyclic(const char* where, const char* word) {
   Box box = build_box(where);
-  SL2AJCC x = construct_x(box.cover);
+  SL2AJCC y = construct_y(box.cover);
   SL2AJCC w = construct_word(box.cover, word);
-  check(inside_var_nbd_x(w, box.cover) &&
-      non_cyclic_power(w, x),
+  check(inside_var_nbd_y(w, box.cover) &&
+      non_cyclic_power(w, y),
       where);
 }
 
