@@ -73,7 +73,8 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             verify_symmetric_relator(where, code);
             break; }
         case 'T': { // Line has format  T(first, second) - verified_vol3_relator_pair
-            word_pair pair = get_word_pair(code);
+            word_pair pair;
+            get_word_pair(code, pair);
             verify_vol3(where, pair.first, pair.second);
             break; }
         // We fail by default, guaranteeing completes of the tree
@@ -86,7 +87,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
     if (*count_ptr % (1 << 18) == 0 && code[0] != 'X') {
         #define PBSTR "++++++++++++++++++++++++++++++++++++++++++++++++++"
         #define PBWIDTH 50
-        #define NUM_NODES 1394524064
+        #define NUM_NODES 725203813 
         double fraction = ((double) *count_ptr) / NUM_NODES;
         int lpad = (int) (fraction * PBWIDTH);
         int rpad = PBWIDTH - lpad;

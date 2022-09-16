@@ -186,9 +186,8 @@ void parse_word(char* code)
 }
 
 // Returns a word pair encoded in code
-word_pair get_word_pair(char* code)
+void get_word_pair(char* code, word_pair& pair)
 {
-  word_pair pair;
   char * start = strchr(code,'(');
   char * mid = strchr(code,',');
   char * end = strchr(code,')');
@@ -198,7 +197,6 @@ word_pair get_word_pair(char* code)
   strncpy(pair.second, mid+1, second_len);
   pair.first[first_len] = '\0';
   pair.second[second_len] = '\0';
-  return pair;
 }
 
 // Generators and words
@@ -560,7 +558,6 @@ inline const bool must_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
 
 inline const bool cant_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
   AJCC fsp2sq = four_sinh_perp2_sq_ay_way(w, p);
-  print_type(fsp2sq);
   // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
   return absLB(fsp2sq) > 0; 
 }
@@ -812,7 +809,7 @@ inline bool is_symmetric_relator(const char* word) {
   int len = sizeof(symmetric)/sizeof(symmetric[0]);
   assert(len == 14);
   for (int i = 0; i < len; ++i) {
-    if (strncmp(word, impossible[i], 32) == 0) {
+    if (strncmp(word, symmetric[i], 32) == 0) {
       return true;
     }
   }
@@ -844,6 +841,20 @@ bool is_proven_elementary(const char* word, const AJCCParams& p) {
 
 void verify_impossible_relator(const char* where, const char* word) {
   Box box = build_box(where);
+  if (!(is_impossible(word) &&
+      is_proven_elementary(word, box.cover))) {
+    fprintf(stderr, "At %s\n", where);
+    print_box(box);
+    fprintf(stderr, "generator x is\n");
+    print_type(construct_x(box.cover));
+    fprintf(stderr, "generator y is\n");
+    print_type(construct_y(box.cover));
+    fprintf(stderr, "word %s is\n", word);
+    print_type(construct_word(box.cover, word));
+    fprintf(stderr, "Check: (1) %d and (2) %d\n",
+        is_impossible(word),
+        is_proven_elementary(word, box.cover));
+  }
   check(is_impossible(word) &&
       is_proven_elementary(word, box.cover),
       where); 
