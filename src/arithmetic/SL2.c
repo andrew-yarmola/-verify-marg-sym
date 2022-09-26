@@ -26,14 +26,10 @@ const SL2AJCC inverse(const SL2AJCC &M) {
   return SL2AJCC(M.d,-M.b,-M.c,M.a);
 };
 
-const AJCC dist(const SL2AJCC &M1, const SL2AJCC &M2) {
-  return abs(M1.a - M2.a) + abs(M1.b - M2.b) + abs(M1.c - M2.c) + abs(M1.d - M2.d); 
-};
-
 const SL2AJCC pow(const SL2AJCC &M, int n) {
-  SL2AJCC A; // identity
+  SL2AJCC A(); // identity
   if (n == 0) { return A; }
-  SL2AJCC B;
+  SL2AJCC B();
   if (n < 0) { 
     B = inverse(M);
     n = -n;
