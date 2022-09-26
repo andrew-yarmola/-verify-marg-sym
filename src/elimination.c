@@ -290,7 +290,7 @@ int syllables(const char* w) {
 } 
 
 // Elimination Tools
-//
+
 inline const AJCC mobius(const SL2AJCC &x, const AJCC &p) {
   return ((x.a * p) + x.b) / ((x.c * p) + x.d);
 }
@@ -591,23 +591,19 @@ inline bool non_cyclic_power(const SL2AJCC& w, const SL2AJCC& x_or_y) {
   return not_identity(commutator); 
 }
 
+inline assert_correct_branch(AJCCParams& p) {
+
+}
+
 // Our compact parameter space has the following bounds:
 // TODO
 void verify_out_of_bounds(const char* where, char bounds_code)
 {
   Box box = build_box(where);
-//  fprintf(stderr, "At %s\n", where); 
-//  print_box(box);
   AJCC one(1);
   switch(bounds_code) {
     case '0':	{ // 1.0052 < cosh(0.104) <= cosh(mu) <= 0.846
                 AJCC coshmu = cosh_move_j(construct_x(box.cover));
-//                print_type(coshmu);
-//                fprintf(stderr, "%f < %f\n", absUB(coshmu), g_cosh_marg_lower_bound);
-//                fprintf(stderr, "%f > %f\n", absLB(coshmu), g_cosh_marg_upper_bound);
-//                fprintf(stderr, "Check: %d\n",  
-//                    absUB(coshmu) < g_cosh_marg_lower_bound ||
-//                    absLB(coshmu) > g_cosh_marg_upper_bound);
                 check(
                     absUB(coshmu) < g_cosh_marg_lower_bound ||
                     absLB(coshmu) > g_cosh_marg_upper_bound,

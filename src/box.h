@@ -7,15 +7,17 @@
 #define DIM 4
 #define SCL 2
 
+// Params datatype at the center
 typedef struct {
   XComplex sinhL2;
   XComplex sinhD2;
 } XParams;
 
+// Params datatype for affine-jet computations
 typedef struct {
   AJCC sinhL2;
   AJCC sinhD2;
-  // derived parameters
+  // derived parameters from the two above
   AJCC sinhsqL2;
   AJCC sinhsqD2;
   AJCC coshsqL2;

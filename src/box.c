@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "box.h"
 
-
 double shape[DIM];
 static bool shape_initialized = false; 
 
@@ -19,6 +18,11 @@ void compute_center_and_size(Box& box)
   }
 }
 
+// Sets the defived parameter given sinh(L/2) and sinh(D/2)
+// The naming conventions are
+//      L2 = L/2, sihnsqD2 = sinh^2(D/2), expmD2 = exp(-D/2),
+//      twocoshreL = 2 cosh(re(L)), etc
+// the rest should be self explanatory
 void fill_derived(AJCCParams& p) {
   AJCC one = AJCC(1);
   p.sinhsqL2 = p.sinhL2 * p.sinhL2;
