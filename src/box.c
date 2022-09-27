@@ -27,10 +27,10 @@ void fill_derived(AJCCParams& p) {
   AJCC one = AJCC(1);
   p.sinhsqL2 = p.sinhL2 * p.sinhL2;
   p.coshsqL2 = p.sinhsqL2 + one;
-  p.coshL2 = sqrt(p.coshsqL2); // TODO check if correct branch
+  p.coshL2 = sqrt(p.coshsqL2); // Note: this is correct as valid parameters have re(L) >= 0 
   p.sinhsqD2 = p.sinhD2 * p.sinhD2;
   p.coshsqD2 = p.sinhsqD2 + one;
-  p.coshD2 = sqrt(p.coshsqD2); // TODO check if correct branch
+  p.coshD2 = sqrt(p.coshsqD2); // Note: this is correct as valid parameters have re(D) > 0
   
   p.expD2 = p.coshD2 + p.sinhD2; 
   p.expmD2 = p.coshD2 - p.sinhD2;
@@ -138,6 +138,7 @@ Box build_box(const char* where) {
   return box;    
 }
 
+// Debug tool only. Remove for final version
 void print_box(const Box& box) {
   fprintf(stderr, "sinh(L/2) = %f + i %f with size %f, absLB %f, and absUB %f\n",
                                   box.cover.sinhL2.f.re, box.cover.sinhL2.f.im, box.cover.sinhL2.size, absLB(box.cover.sinhL2), absUB(box.cover.sinhL2));

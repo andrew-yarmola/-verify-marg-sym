@@ -8,6 +8,7 @@ extern double g_cosh_marg_lower_bound;
 extern double g_cosh_marg_upper_bound;
 extern double g_cosh_r_bound;
 
+// Complete list of impossible relators. See article for reasons for why 
 char impossible[134][32] = {
   "xy",
   "Xy",
@@ -162,7 +163,7 @@ char symmetric[14][32] = {
   "XXXYYXXYXXYY"
 };
 
-// Helper functions
+//** Helper functions **//
 
 // If inequalities is false, crash the program
 void check(bool inequalities, const char* where)
@@ -199,7 +200,7 @@ void get_word_pair(char* code, word_pair& pair)
   pair.second[second_len] = '\0';
 }
 
-// Generators and words
+//** Generators and words **//
 
 SL2AJCC construct_x(const AJCCParams& params) {
   return SL2AJCC(
@@ -289,53 +290,165 @@ int syllables(const char* w) {
   return count;
 } 
 
-// Elimination Tools
+//** Elimination Tools **//
 
-inline const AJCC mobius(const SL2AJCC &x, const AJCC &p) {
-  return ((x.a * p) + x.b) / ((x.c * p) + x.d);
+//* Parameter space bounds *//
+
+//  Our compact parameter space has the following bounds:
+//      (1) sinh(L/2) >= 0
+//          in particular cosh(re(L)) >= 1
+//      (2) sinh(D/2) >= 0
+//          in particular cosh(re(D)) >= 1
+//      (3) 2 cosh(re(D/2)) >= g_cosh_r_bound * 2 = 1.999 * 2 
+//      (1) sinh(L/2) >= 0
+//      (1) sinh(L/2) >= 0
+ 
+void verify_out_of_bounds(const char* where, char bounds_code)
+{
+  Box box = build_box(where);
+  AJCC one(1);
+  switch(bounds_code) {
+    case '0':	{ // 1.0052 < cosh(0.104) <= cosh(mu) <= 0.846
+                AJCC coshmu = cosh_move_j(construct_x(box.cover));
+                check(
+                    absUB(coshmu) < g_cosh_marg_lower_bound ||
+                    absLB(coshmu) > g_cosh_marg_upper_bound,
+                    where);
+                break;
+              }
+    case '1': {
+                check(
+                    absLB(box.cover.twocoshreD2) > g_cosh_r_bound * 2 ||
+                    strictly_pos(re(-box.nearer.sinhL2)) ||
+                    strictly_pos(re(-box.nearer.sinhD2)) ||
+                    strictly_pos(one - box.cover.coshreD) ||
+                    strictly_pos(one - box.cover.coshreL),
+                    where);
+                break;
+              }
+    default: {
+               check(false, where);
+             }
+  }
 }
 
-const AJCC four_cosh_re_length(const SL2AJCC& w) {
-  AJCC tr = w.a + w.d;
-  return abs_sqrd(tr) + abs(tr*tr - 4);
+
+
+
+
+// 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
+inline const AJCC two_sinh_perp2_sq_wax_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC one = AJCC(1);
+  return (w.b * w.d) * p.expD2 - (w.a * w.c) * p.expmD2 - one; 
 }
 
+// 2 sinh^2(half complex distance between w(axis(y)) and (0, inf)) 
+inline const AJCC two_sinh_perp2_sq_way_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC one = AJCC(1);
+  return (w.b * w.d) * p.expmD2 - (w.a * w.c) * p.expD2 - one; 
+}
+
+// 2 sinh^2(half complex distance between w(axis(x)) and (-1, 1)) 
+inline const AJCC four_sinh_perp2_sq_wax_mp_one(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC two = AJCC(2);
+  return (w.d * w.d - w.b * w.b) * p.expD2 + (w.a * w.a - w.c * w.c) * p.expmD2 - two; 
+}
+
+// 2 sinh^2(half complex distance between w(axis(y)) and (-1, 1)) 
+inline const AJCC four_sinh_perp2_sq_way_mp_one(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC two = AJCC(2);
+  return (w.d * w.d - w.b * w.b) * p.expmD2 + (w.a * w.a - w.c * w.c) * p.expD2 - two; 
+}
+
+// 2 sinh^2(half complex distance between w(axis(x)) and (-i, i)) 
+inline const AJCC four_sinh_perp2_sq_wax_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC two = AJCC(2);
+  AJCC iye = eye(AJCC(1));
+  return ((w.d * w.d + w.b * w.b) * p.expD2 - (w.a * w.a + w.c * w.c) * p.expmD2) * iye - two; 
+}
+
+// 2 sinh^2(half complex distance between w(axis(y)) and (-i, i)) 
+inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC two = AJCC(2);
+  AJCC iye = eye(AJCC(1));
+  return ((w.d * w.d + w.b * w.b) * p.expmD2 - (w.a * w.a + w.c * w.c) * p.expD2) * iye - two; 
+}
+
+const AJCC cosh_move_j(const SL2AJCC& w) {
+  AJCC q = abs_sqrd(w.c) + abs_sqrd(w.d);
+  AJCC z = w.a * conj(w.c) + w.b * conj(w.d);
+  return (abs_sqrd(z) + (q - 1) * (q - 1))/(q * 2) + 1; 
+}
+
+inline const bool not_identity(const SL2AJCC& w) {
+  return absLB(w.b) > 0 ||  absLB(w.c) > 0 ||
+    ((absLB(w.a-1) > 0 || absLB(w.d-1) > 0) && (absLB(w.a+1) > 0 || absLB(w.d+1) > 0));
+}
+
+
+// Given input z = 2 sinh^2(perp/2) returns
+//      2 cosh(re(perp)) = |z + 2| + |z|
+// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
+// to be the complex orthodistance between axes and dist = re(perp).
 const AJCC two_cosh_dist(const AJCC& two_sinh_sq_perp2) {
   return abs(two_sinh_sq_perp2 + 2) + abs(two_sinh_sq_perp2);
 }
 
+inline const bool tube_hits_axis_two(const AJCC& two_sinh_p2sq, const AJCC& two_cosh_re_tube) {
+  AJCC tcd = two_cosh_dist(two_sinh_p2sq);
+  // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
+  return strictly_pos(two_cosh_re_tube - tcd) && absLB(two_sinh_p2sq + 1) > 0;
+}
+
+
+// Given input z = 4 sinh^2(perp/2) returns
+//      4 cosh(re(perp)) = |z + 4| + |z|
+// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
 const AJCC four_cosh_dist(const AJCC& four_sinh_sq_perp2) {
   return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
 }
 
-const AJCC jorgensen_xw(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC shLx2 = p.sinhL2;
-  AJCC td = w.a - w.d;
-  AJCC z = w.c * p.expmD2 - w.b * p.expD2;
-  return (abs(td * td - z * z) + 4) * abs_sqrd(shLx2);
+inline const bool tube_hits_axis_four(const AJCC& four_sinh_p2sq, const AJCC& two_cosh_re_tube) {
+  AJCC fcd = four_cosh_dist(four_sinh_p2sq);
+  // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
+  return strictly_pos(two_cosh_re_tube * 2 - fcd) && absLB(four_sinh_p2sq + 2) > 0;
 }
 
-const AJCC jorgensen_wx(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC shLx2 = p.sinhL2;
-  AJCC tr = w.a + w.d;
-  AJCC td = w.a - w.d;
-  AJCC z = w.c * p.expmD2 - w.b * p.expD2;
-  return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLx2);
+
+inline const bool wx_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC tsp2sq_inf = two_sinh_perp2_sq_wax_zero_inf(w, p);
+  AJCC fsp2sq_one = four_sinh_perp2_sq_wax_mp_one(w, p);
+  AJCC fsp2sq_iye = four_sinh_perp2_sq_wax_mp_iye(w, p);
+  return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
+      tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
+      tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
 }
 
-const AJCC jorgensen_yw(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC shLy2 = p.sinhL2;
-  AJCC td = w.a - w.d;
-  AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-  return (abs(td * td - z * z) + 4) * abs_sqrd(shLy2);
+inline const bool wy_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC tsp2sq_inf = two_sinh_perp2_sq_way_zero_inf(w, p);
+  AJCC fsp2sq_one = four_sinh_perp2_sq_way_mp_one(w, p);
+  AJCC fsp2sq_iye = four_sinh_perp2_sq_way_mp_iye(w, p);
+  return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
+      tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
+      tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
 }
 
-const AJCC jorgensen_wy(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC shLy2 = p.sinhL2;
-  AJCC tr = w.a + w.d;
-  AJCC td = w.a - w.d;
-  AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-  return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLy2);
+
+// Mobius transforamtion
+inline const AJCC mobius(const SL2AJCC &w, const AJCC &z) {
+  return ((w.a * z) + w.b) / ((w.c * z) + w.d);
+}
+
+inline const bool does_not_fix_sym_axis(const SL2AJCC& w) {
+  AJCC one(1);
+  AJCC zero(0);
+  AJCC iye(0,1);
+  return (absLB(w.b) > 0 && absLB(w.d) > 0) 
+    || (absLB(w.a) > 0 && absLB(w.c) > 0) ||
+    (absLB(mobius(w, one) - one) > 0 && absLB(mobius(w, one) + one) > 0) || 
+    (absLB(mobius(w, iye) - iye) > 0 && absLB(mobius(w, iye) + iye) > 0) || 
+    (absLB(mobius(w, -one) - one) > 0 && absLB(mobius(w, -one) + one) > 0) || 
+    (absLB(mobius(w, -iye) - iye) > 0 && absLB(mobius(w, -iye) + iye) > 0); 
 }
 
 // 4 sinh^2(half complex distance between axis(x) and w(axis(x))) 
@@ -396,62 +509,34 @@ const AJCC four_cosh_dist_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
   return  abs(z - 2) + abs(z + 2);
 }
 
-// 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
-inline const AJCC two_sinh_perp2_sq_wax_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC one = AJCC(1);
-  return (w.b * w.d) * p.expD2 - (w.a * w.c) * p.expmD2 - one; 
+inline const bool cant_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC fsp2sq = four_sinh_perp2_sq_ax_wax(w, p);
+  // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
+  return absLB(fsp2sq) > 0; 
 }
 
-// 2 sinh^2(half complex distance between w(axis(y)) and (0, inf)) 
-inline const AJCC two_sinh_perp2_sq_way_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC one = AJCC(1);
-  return (w.b * w.d) * p.expmD2 - (w.a * w.c) * p.expD2 - one; 
+inline const bool cant_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC fsp2sq = four_sinh_perp2_sq_ay_way(w, p);
+  // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
+  return absLB(fsp2sq) > 0; 
 }
 
-// 2 sinh^2(half complex distance between w(axis(x)) and (-1, 1)) 
-inline const AJCC four_sinh_perp2_sq_wax_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = AJCC(2);
-  return (w.d * w.d - w.b * w.b) * p.expD2 + (w.a * w.a - w.c * w.c) * p.expmD2 - two; 
+inline const bool must_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC diff = p.coshreD * 4 - four_cosh_dist_ax_wax(w, p);
+  // We know that diff is away from zero and the diff should be conj symmetrix, so
+  // we only test if the real part is to one side of the bound
+  return strictly_pos(diff);
 }
 
-// 2 sinh^2(half complex distance between w(axis(y)) and (-1, 1)) 
-inline const AJCC four_sinh_perp2_sq_way_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = AJCC(2);
-  return (w.d * w.d - w.b * w.b) * p.expmD2 + (w.a * w.a - w.c * w.c) * p.expD2 - two; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(x)) and (-i, i)) 
-inline const AJCC four_sinh_perp2_sq_wax_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = AJCC(2);
-  AJCC iye = eye(AJCC(1));
-  return ((w.d * w.d + w.b * w.b) * p.expD2 - (w.a * w.a + w.c * w.c) * p.expmD2) * iye - two; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(y)) and (-i, i)) 
-inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC two = AJCC(2);
-  AJCC iye = eye(AJCC(1));
-  return ((w.d * w.d + w.b * w.b) * p.expmD2 - (w.a * w.a + w.c * w.c) * p.expD2) * iye - two; 
+inline const bool must_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_way(w, p);
+  // We know that diff is away from zero and the diff should be conj symmetrix, so
+  // we only test if the real part is to one side of the bound
+  return strictly_pos(diff);
 }
 
 inline const bool moves_y_axis_too_close_to_x(const SL2AJCC& w, const AJCCParams& p) {
   AJCC diff = p.coshreD * 4 - four_cosh_dist_ax_way(w, p);
-  if (!strictly_pos(diff)) {
-    fprintf(stderr, "****************************************\n");
-    fprintf(stderr, "MOVES Y TOO CLOSE TO X\n");
-    print_type(w);
-    print_type("4cosh(dx+dy):", p.coshreD * 4);
-    print_type("4coshd(dist(x-axis, w(y-axis))):", four_cosh_dist_ax_way(w, p)); 
-    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
-      ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
-    print_type("4 sinh^2(dist/2) + 2:", z);
-    print_type("|4 sinh^2(dist/2)|:", abs(z - 2));
-    print_type("|4 cosh^2(dist/2)|:", abs(z + 2));
-    print_type("4 cosh(dist):",  abs(z - 2) + abs(z + 2));
-    print_type("diff:", diff);
-    fprintf(stderr, "diff is positive: %d\n", strictly_pos(diff));
-    fprintf(stderr, "****************************************\n");
-  }
   // We know that diff is away from zero and the diff should be conj symmetrix, so
   // we only test if the real part is to one side of the bound
   return strictly_pos(diff);
@@ -461,22 +546,6 @@ inline const bool moves_x_axis_too_close_to_y(const SL2AJCC& w, const AJCCParams
   AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_wax(w, p);
   // We know that diff is away from zero and the diff should be conj symmetrix, so
   // we only test if the real part is to one side of the bound
-  if (!strictly_pos(diff)) {
-    fprintf(stderr, "****************************************\n");
-    fprintf(stderr, "MOVES X TOO CLOSE TO Y\n");
-    print_type(w);
-    print_type("4cosh(dx+dy):", p.coshreD * 4);
-    print_type("4coshd(dist(y-axis, w(x-axis))):", four_cosh_dist_ay_wax(w, p)); 
-    AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
-      ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
-    print_type("4 sinh^2(dist/2) + 2:", z);
-    print_type("|4 sinh^2(dist/2)|:", abs(z - 2));
-    print_type("|4 cosh^2(dist/2)|:", abs(z + 2));
-    print_type("4 cosh(dist):",  abs(z - 2) + abs(z + 2));
-    print_type("diff:", diff);
-    fprintf(stderr, "diff is positive: %d\n", strictly_pos(diff));
-    fprintf(stderr, "****************************************\n");
-  }
   return strictly_pos(diff);
 }
 
@@ -490,83 +559,35 @@ inline const bool moved_x_axis_not_y_axis(const SL2AJCC& w, const AJCCParams& p)
   return absLB(fsp2sq) > 0; 
 }
 
-const AJCC cosh_move_j(const SL2AJCC& w) {
-  AJCC q = abs_sqrd(w.c) + abs_sqrd(w.d);
-  AJCC z = w.a * conj(w.c) + w.b * conj(w.d);
-  return (abs_sqrd(z) + (q - 1) * (q - 1))/(q * 2) + 1; 
+
+const AJCC jorgensen_xw(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC shLx2 = p.sinhL2;
+  AJCC td = w.a - w.d;
+  AJCC z = w.c * p.expmD2 - w.b * p.expD2;
+  return (abs(td * td - z * z) + 4) * abs_sqrd(shLx2);
 }
 
-inline const bool not_identity(const SL2AJCC& w) {
-  return absLB(w.b) > 0 ||  absLB(w.c) > 0 ||
-    ((absLB(w.a-1) > 0 || absLB(w.d-1) > 0) && (absLB(w.a+1) > 0 || absLB(w.d+1) > 0));
+const AJCC jorgensen_wx(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC shLx2 = p.sinhL2;
+  AJCC tr = w.a + w.d;
+  AJCC td = w.a - w.d;
+  AJCC z = w.c * p.expmD2 - w.b * p.expD2;
+  return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLx2);
 }
 
-inline const bool tube_hits_axis_two(const AJCC& two_sinh_p2sq, const AJCC& two_cosh_re_tube) {
-  AJCC tcd = two_cosh_dist(two_sinh_p2sq);
-  // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
-  return strictly_pos(two_cosh_re_tube - tcd) && absLB(two_sinh_p2sq + 1) > 0;
+const AJCC jorgensen_yw(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC shLy2 = p.sinhL2;
+  AJCC td = w.a - w.d;
+  AJCC z = w.c * p.expD2 - w.b * p.expmD2;
+  return (abs(td * td - z * z) + 4) * abs_sqrd(shLy2);
 }
 
-inline const bool tube_hits_axis_four(const AJCC& four_sinh_p2sq, const AJCC& two_cosh_re_tube) {
-  AJCC fcd = four_cosh_dist(four_sinh_p2sq);
-  // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
-  return strictly_pos(two_cosh_re_tube * 2 - fcd) && absLB(four_sinh_p2sq + 2) > 0;
-}
-
-inline const bool wx_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC tsp2sq_inf = two_sinh_perp2_sq_wax_zero_inf(w, p);
-  AJCC fsp2sq_one = four_sinh_perp2_sq_wax_mp_one(w, p);
-  AJCC fsp2sq_iye = four_sinh_perp2_sq_wax_mp_iye(w, p);
-  return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
-      tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
-      tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
-}
-
-inline const bool wy_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC tsp2sq_inf = two_sinh_perp2_sq_way_zero_inf(w, p);
-  AJCC fsp2sq_one = four_sinh_perp2_sq_way_mp_one(w, p);
-  AJCC fsp2sq_iye = four_sinh_perp2_sq_way_mp_iye(w, p);
-  return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
-      tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
-      tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
-}
-
-inline const bool does_not_fix_sym_axis(const SL2AJCC& w) {
-  AJCC one(1);
-  AJCC zero(0);
-  AJCC iye(0,1);
-  return (absLB(w.b) > 0 && absLB(w.d) > 0) 
-    || (absLB(w.a) > 0 && absLB(w.c) > 0) ||
-    (absLB(mobius(w, one) - one) > 0 && absLB(mobius(w, one) + one) > 0) || 
-    (absLB(mobius(w, iye) - iye) > 0 && absLB(mobius(w, iye) + iye) > 0) || 
-    (absLB(mobius(w, -one) - one) > 0 && absLB(mobius(w, -one) + one) > 0) || 
-    (absLB(mobius(w, -iye) - iye) > 0 && absLB(mobius(w, -iye) + iye) > 0); 
-}
-
-inline const bool cant_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC fsp2sq = four_sinh_perp2_sq_ax_wax(w, p);
-  // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
-  return absLB(fsp2sq) > 0; 
-}
-
-inline const bool must_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC diff = p.coshreD * 4 - four_cosh_dist_ax_wax(w, p);
-  // We know that diff is away from zero and the diff should be conj symmetrix, so
-  // we only test if the real part is to one side of the bound
-  return strictly_pos(diff);
-}
-
-inline const bool cant_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC fsp2sq = four_sinh_perp2_sq_ay_way(w, p);
-  // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
-  return absLB(fsp2sq) > 0; 
-}
-
-inline const bool must_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
-  AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_way(w, p);
-  // We know that diff is away from zero and the diff should be conj symmetrix, so
-  // we only test if the real part is to one side of the bound
-  return strictly_pos(diff);
+const AJCC jorgensen_wy(const SL2AJCC& w, const AJCCParams& p) {
+  AJCC shLy2 = p.sinhL2;
+  AJCC tr = w.a + w.d;
+  AJCC td = w.a - w.d;
+  AJCC z = w.c * p.expD2 - w.b * p.expmD2;
+  return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLy2);
 }
 
 inline const bool inside_var_nbd_x(const SL2AJCC& w, const AJCCParams& params) {
@@ -577,6 +598,7 @@ inline const bool inside_var_nbd_y(const SL2AJCC& w, const AJCCParams& params) {
   return absUB(jorgensen_wy(w, params)) < 1 || absUB(jorgensen_yw(w, params)) < 1 || must_fix_y_axis(w, params);
 }
 
+
 inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
   AJCC diff = cosh_move_j(construct_x(p)) - cosh_move_j(w);
   return strictly_pos(diff); 
@@ -584,46 +606,13 @@ inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
 
 inline bool non_cyclic_power(const SL2AJCC& w, const SL2AJCC& x_or_y) {
   // Assume word fixes the same axis as x or y, so it must live in a cyclic group with x or y.
-  // Here we check that this is impossible in this box. Must use margulis
-  // number to check cut off for roots of x or y
+  // We simply check the commutator is not the idenity in the box 
   SL2AJCC commutator = x_or_y * w * inverse(w * x_or_y);
-  // TODO Test powers when coshmu > coshsdx + sinhsdx
   return not_identity(commutator); 
 }
 
 inline assert_correct_branch(AJCCParams& p) {
 
-}
-
-// Our compact parameter space has the following bounds:
-// TODO
-void verify_out_of_bounds(const char* where, char bounds_code)
-{
-  Box box = build_box(where);
-  AJCC one(1);
-  switch(bounds_code) {
-    case '0':	{ // 1.0052 < cosh(0.104) <= cosh(mu) <= 0.846
-                AJCC coshmu = cosh_move_j(construct_x(box.cover));
-                check(
-                    absUB(coshmu) < g_cosh_marg_lower_bound ||
-                    absLB(coshmu) > g_cosh_marg_upper_bound,
-                    where);
-                break;
-              }
-    case '1': {
-                check(
-                    absLB(box.cover.twocoshreD2) > g_cosh_r_bound * 2 ||
-                    strictly_pos(re(-box.nearer.sinhL2)) ||
-                    strictly_pos(re(-box.nearer.sinhD2)) ||
-                    strictly_pos(one - box.cover.coshreD) ||
-                    strictly_pos(one - box.cover.coshreL),
-                    where);
-                break;
-              }
-    default: {
-               check(false, where);
-             }
-  }
 }
 
 // Meyerhoff k-test
@@ -734,16 +723,6 @@ void verify_x_hits_x(const char* where, const char* word) {
 void verify_y_hits_y(const char* where, const char* word) {
   Box box = build_box(where);
   SL2AJCC w = construct_word(box.cover, word);
-//  fprintf(stderr, "At %s\n", where);
-//  print_box(box);
-//  fprintf(stderr, "generator x is\n");
-//  print_type(construct_x(box.cover));
-//  fprintf(stderr, "generator y is\n");
-//  print_type(construct_y(box.cover));
-//  fprintf(stderr, "word %s is\n", word);
-//  print_type(w);
-//  fprintf(stderr, "Check: (1) %d and (2) syl %d and %d\n",
-//      inside_var_nbd_y(w, box.cover), syllables(word), cant_fix_y_axis(w, box.cover));  
   check(inside_var_nbd_y(w, box.cover) &&
       (syllables(word) < 4 || cant_fix_y_axis(w, box.cover)),
       where);
@@ -812,6 +791,17 @@ inline bool is_symmetric_relator(const char* word) {
   return false;
 }
 
+
+// Returns 4 cosh(real_translation_length(w))) = 
+//      = |trace(w)|^2 + |trace(w)^2 - 4|
+// since trace(w) = 2 cosh(complex_translaton_length(w)/2)
+// and |cosh(u+iv)|^2 = (cosh(2u) + cos(2v))/2
+// and |sinh(u+iv)|^2 = (cosh(2u) - cos(2v))/2
+const AJCC four_cosh_re_length(const SL2AJCC& w) {
+  AJCC tr = w.a + w.d;
+  return abs_sqrd(tr) + abs(tr*tr - 4);
+}
+
 bool is_proven_elementary(const char* word, const AJCCParams& p) {
   SL2AJCC x = construct_x(p);
   SL2AJCC y = construct_y(p);
@@ -834,6 +824,7 @@ bool is_proven_elementary(const char* word, const AJCCParams& p) {
   }
   return false;
 }
+
 
 void verify_impossible_relator(const char* where, const char* word) {
   Box box = build_box(where);
