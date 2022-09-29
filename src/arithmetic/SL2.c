@@ -27,7 +27,7 @@ const SL2AJCC inverse(const SL2AJCC &M) {
 };
 
 const SL2AJCC pow(const SL2AJCC &M, int n) {
-  SL2AJCC A(); // identity
+  SL2AJCC A = SL2AJCC(); // identity
   if (n == 0) { return A; }
   SL2AJCC B();
   if (n < 0) { 
