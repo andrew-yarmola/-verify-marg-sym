@@ -21,40 +21,20 @@ void verify(char* where, size_t depth, size_t* count_ptr)
         case '1': { 
             verify_out_of_bounds(where, code[0]);
             break; }
-        case '2': { 
-            verify_meyerhoff(where);
-            break; }
-        case 'a': { // Line has format  a(word) - killed_x_hits_y
-            parse_word(code);
-            verify_x_hits_y(where, code);
-            break; }
         case 'A': { // Line has format  A(word) - killed_y_hits_x
             parse_word(code);
             verify_y_hits_x(where, code);
             break; }
-        case 'x': { // Line has format  x(word) - killed_x_hits_x
-            parse_word(code);
-            verify_x_hits_x(where, code);
-            break; }
-        case 'y': { // Line has format  y(word) - killed_y_hits_y 
+        case 'Y': { // Line has format  Y(word) - killed_y_hits_y 
             parse_word(code);
             verify_y_hits_y(where, code);
             break; }
-        case 'p': { // Line has format  p(word) - killed_x_not_cyclic 
-            parse_word(code);
-            verify_x_not_cyclic(where, code);
+        case '2': { 
+            verify_meyerhoff(where);
             break; }
-        case 'P': { // Line has format  P(word) - killed_y_not_cyclic 
-            parse_word(code);
-            verify_y_not_cyclic(where, code);
-            break; }
-        case 'm': { // Line has format  m(word) - killed_move
+        case 'M': { // Line has format  M(word) - killed_move
             parse_word(code);
             verify_move(where, code);
-            break; }
-        case 'n': { // Line has format  n(word) - killed_w_ax_hits_sym_axis
-            parse_word(code);
-            verify_w_ax_hits_sym_axis(where, code);
             break; }
         case 'N': { // Line has format  N(word) - killed_w_ay_hits_sym_axis
             parse_word(code);
@@ -66,7 +46,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             break; }
         case 'S': { // Line has format  S(word) - verified_symmetric_relator
             parse_word(code);
-            verify_symmetric_relator(where, code);
+            verify_weeks(where, code);
             break; }
         case 'T': { // Line has format  T(first, second) - verified_vol3_relator_pair
             word_pair pair;
@@ -83,7 +63,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
     if (*count_ptr % (1 << 18) == 0 && code[0] != 'X') {
         #define PBSTR "++++++++++++++++++++++++++++++++++++++++++++++++++"
         #define PBWIDTH 50
-        #define NUM_NODES 725203813 
+        #define NUM_NODES 725219593 
         double fraction = ((double) *count_ptr) / NUM_NODES;
         int lpad = (int) (fraction * PBWIDTH);
         int rpad = PBWIDTH - lpad;

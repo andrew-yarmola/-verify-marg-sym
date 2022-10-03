@@ -136,7 +136,7 @@ char impossible[134][32] = {
   "xxYYYYxxxYxxYYYYxxxY"
 };
 
-char symmetric[14][32] = {
+char weeks[14][32] = {
   "xxYxyxyxY",
   "XXYXyXyXY",
   "xxyyxxYxY",

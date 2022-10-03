@@ -137,6 +137,13 @@ int syllables(const char* w) {
     return count;
 } 
 
+// Return true if w i provably not the identity
+inline const bool not_identity(const SL2AJCC& w) {
+    return absLB(w.b) > 0 ||  absLB(w.c) > 0 ||
+        ((absLB(w.a-1) > 0 || absLB(w.d-1) > 0) && (absLB(w.a+1) > 0 || absLB(w.d+1) > 0));
+}
+
+
 //* Elimination Tools *//
 
 // Note, all validation statement are shown to hold for every point in a box
@@ -193,67 +200,17 @@ void verify_out_of_bounds(const char* where, char bounds_code)
     }
 }
 
-
 //** Margulis tube collision validation **//
-
-//*** Moved tube(x) hits tube(y) and cannot be the same ***//
-
-//  Let tube(x) and tube(y) be the embedded Margulis tubes are x and y.
-//  In this section, we validate that the given word w has the properties:
-//      (1) tube(y) and w(tube(x)) intersect
-//      (2) axis(y) and w(axis(x)) cannot be the same as oriented geodesiscs
-//  Note, condition (2) is enough because if w maps axis(x) to axis(y) with
-//  180-degree rotation, then we cannot be in a manifold group.
-//  We will need three helper functions for (1) and (2).
-
-//  Returns
-//      4 cosh(real distance between axis(y) and w(axis(x))) 
-//  See Lemma TODO for formula.
-const AJCC four_cosh_dist_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
-        ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
-    return  abs(z - 2) + abs(z + 2);
-}
-
-// Returns true if axis(y) and w(axis(x)) are closer than re(D). That is, returns
-// true if tube(y) and w(tube(x)) intersect. Returns false otherwise.
-inline const bool moves_x_axis_too_close_to_y(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_wax(w, p);
-    // We know that diff is away from zero and the diff should be conj symmetrix, so
-    // we only test if the real part is to one side of the bound
-    return strictly_pos(diff);
-}
-
-//  Returns
-//      4 sinh^2(half complex distance between axis(y) and w(axis(x))) 
-//  See Lemma TODO for formula.
-const AJCC four_sinh_perp2_sq_ay_wax(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * p.expmD2 - (w.b * w.b) * p.expD2 ) * p.expmD2 +
-        ((w.d * w.d) * p.expD2  - (w.c * w.c) * p.expmD2) * p.expD2;
-    return  z - 2;
-}
-
-// Returns true if axis(y) and w(axis(x)) are not the same oriented geodesic.
-inline const bool moved_x_axis_not_y_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC fsp2sq = four_sinh_perp2_sq_ay_wax(w, p);
-    return absLB(fsp2sq) > 0; 
-}
-
-// Verifies that w(tube(x)) hits tube(y), but the axes do not coincide.
-void verify_x_hits_y(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(
-            moves_x_axis_too_close_to_y(w, box.cover) &&
-            moved_x_axis_not_y_axis(w, box.cover),
-            where);
-}
 
 //*** Moved tube(y) hits tube(x) and cannot be the same ***//
 
+//  Let tube(x) and tube(y) be the embedded Margulis tubes are x and y.
 //  In this section, we validate that the given word w has the properties:
 //      (1) tube(x) and w(tube(y)) intersect
 //      (2) axis(x) and w(axis(y)) cannot be the same as oriented geodesiscs
+//  Note, condition (2) is enough because if w maps axis(y) to axis(x) with
+//  180-degree rotation, then we cannot be in a manifold group.
+//  We will need three helper functions for (1) and (2).
 
 //  Returns
 //      4 cosh(real distance between axis(x) and w(axis(y))) 
@@ -297,127 +254,28 @@ void verify_y_hits_x(const char* where, const char* word) {
             where);
 }
 
-//*** Moved tube(x) hits tube(x) and cannot be the same ***//
-
-//  In this section, we validate that the given word w has the properties:
-//      (1) <x, w> is elementray or tube(x) and w(tube(x)) intersect:
-//          (1.1) x and w fail Jorgensen's inequality
-//          (1.2) w and x fail Jorgensen's inequality
-//          (1.3) tube(x) and w(tube(x)) intersect
-//      (2) at least one of:
-//          (2.1) axis(x) and w(axis(x)) cannot be the same as oriented geodesisc
-//          (2.2) syllable length of w < 4
-//  Notice that if (1) happens and <x,y> is discrete, then <x,w> is discrete elementray.
-//  Since we also wnat <x,y> torsion-free, the only interesing cases are when w is logoxdomic
-//  (i.e. a rational power of x) or the identity.  But, then we get a relator of syllable
-//  length 4, which we know is impossible by (2.2). Note, if we have (2.1) then there
-//  are no discrete points in the box.
-//  We call condition (1) a variety neighborhood condition for x.
-
-// 4 cosh(real distance between axis(x) and w(axis(x))) 
-const AJCC four_cosh_dist_ax_wax(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC four_sinh_sq_perp2 = four_sinh_perp2_sq_ax_wax(w, p);
-    return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
-}
-
-inline const bool must_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC diff = p.coshreD * 4 - four_cosh_dist_ax_wax(w, p);
-    // We know that diff is away from zero and the diff should be conj symmetrix, so
-    // we only test if the real part is to one side of the bound
-    return strictly_pos(diff);
-}
-
-const AJCC jorgensen_xw(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC shLx2 = p.sinhL2;
-    AJCC td = w.a - w.d;
-    AJCC z = w.c * p.expmD2 - w.b * p.expD2;
-    return (abs(td * td - z * z) + 4) * abs_sqrd(shLx2);
-}
-
-const AJCC jorgensen_wx(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC shLx2 = p.sinhL2;
-    AJCC tr = w.a + w.d;
-    AJCC td = w.a - w.d;
-    AJCC z = w.c * p.expmD2 - w.b * p.expD2;
-    return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLx2);
-}
-
-inline const bool inside_var_nbd_x(const SL2AJCC& w, const AJCCParams& params) {
-    return absUB(jorgensen_wx(w, params)) < 1 ||
-        absUB(jorgensen_xw(w, params)) < 1 ||
-        must_fix_x_axis(w, params);
-}
-
-// 4 sinh^2(half complex distance between axis(x) and w(axis(x))) 
-const AJCC four_sinh_perp2_sq_ax_wax(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC td = w.a - w.d;
-    AJCC zm = w.c * p.expmD2 - w.b * p.expD2;
-    // formula by using crossratios
-    AJCC four_sinh_sq_perp2 = td * td - zm * zm;  
-    return four_sinh_sq_perp2; 
-}
-
-inline const bool cant_fix_x_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC fsp2sq = four_sinh_perp2_sq_ax_wax(w, p);
-    // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
-    return absLB(fsp2sq) > 0; 
-}
-
-void verify_x_hits_x(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(
-            inside_var_nbd_x(w, box.cover) &&
-            (syllables(word) < 4 || cant_fix_x_axis(w, box.cover)),
-            where);
-}
-
 //*** Moved tube(y) hits tube(y) and cannot be the same ***//
 
 //  In this section, we validate that the given word w has the properties:
-//      (1) <y, w> is elementray or tube(y) and w(tube(y)) intersect:
-//          (1.1) y and w fail Jorgensen's inequality
-//          (1.2) w and y fail Jorgensen's inequality
-//          (1.3) tube(y) and w(tube(y)) intersect
+//      (1) tube(y) and w(tube(y)) intersect.
+//          (1.1) <y, w> generate an elementray group, so the tubes intersect
+//              (1.1.1) x and w fail Jorgensen's inequality
+//              (1.1.2) w and x fail Jorgensen's inequality
+//          (1.3) tube(y) and w(tube(y)) intersect for geometric reasons
 //      (2) at least one of:
-//          (2.1) axis(y) and w(axis(y)) cannot be the same as oriented geodesisc
-//          (2.2) syllable length of w < 4
+//          (2.1) syllable length of w < 4, which means there is an impossible relator
+//          (2.2) axis(y) and w(axis(y)) cannot be the same as oriented geodesisc
+//          (2.3) wyWY is not the identity
+//  Notice that if (1) happens and <x,y> is discrete, then <y,w> is discrete elementray.
+//  Since we also want <x,y> torsion-free, the only interesing cases are when w is logoxdomic
+//  (i.e. a rational power of y) or the identity.  But, then we get a relator of syllable
+//  length 4, which we know is impossible by (2.1). Note, if we have (2.1) or (2.3)
+//  then there are no discrete points in the box.
+//  We call condition (1) a variety neighborhood condition for y.
 
-// 4 cosh(real distance between axis(y) and w(axis(y))) 
-const AJCC four_cosh_dist_ay_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC four_sinh_sq_perp2 = four_sinh_perp2_sq_ay_way(w, p); 
-    return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
-}
-
-inline const bool must_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_way(w, p);
-    // We know that diff is away from zero and the diff should be conj symmetrix, so
-    // we only test if the real part is to one side of the bound
-    return strictly_pos(diff);
-}
-
-const AJCC jorgensen_yw(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC shLy2 = p.sinhL2;
-    AJCC td = w.a - w.d;
-    AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-    return (abs(td * td - z * z) + 4) * abs_sqrd(shLy2);
-}
-
-const AJCC jorgensen_wy(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC shLy2 = p.sinhL2;
-    AJCC tr = w.a + w.d;
-    AJCC td = w.a - w.d;
-    AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-    return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLy2);
-}
-
-inline const bool inside_var_nbd_y(const SL2AJCC& w, const AJCCParams& params) {
-    return absUB(jorgensen_wy(w, params)) < 1 ||
-        absUB(jorgensen_yw(w, params)) < 1 ||
-        must_fix_y_axis(w, params);
-}
-
-// 4 sinh^2(half complex distance between axis(y) and w(axis(y))) 
+// Returns
+//      4 sinh^2(half complex distance between axis(y) and w(axis(y))) 
+// See Lemma TOFO for the formula.
 const AJCC four_sinh_perp2_sq_ay_way(const SL2AJCC& w, const AJCCParams& p) {
     AJCC td = w.a - w.d;
     AJCC zm = w.c * p.expD2 - w.b * p.expmD2;
@@ -426,197 +284,102 @@ const AJCC four_sinh_perp2_sq_ay_way(const SL2AJCC& w, const AJCCParams& p) {
     return four_sinh_sq_perp2; 
 }
 
+//  Returns
+//      4 cosh(real distance between axis(y) and w(axis(y))) 
+//  See Lemma TODO for formula.
+const AJCC four_cosh_dist_ay_way(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC four_sinh_sq_perp2 = four_sinh_perp2_sq_ay_way(w, p); 
+    return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
+}
+
+// Returns true if the distance between axis(y) and w(axis(y)) is less than re(D)
+inline const bool must_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC diff = p.coshreD * 4 - four_cosh_dist_ay_way(w, p);
+    // We know that diff is away from zero and the diff should be conj symmetrix, so
+    // we only test if the real part is to one side of the bound
+    return strictly_pos(diff);
+}
+
+// Returns the value of Jorgensen's inequality for y, w
+// See Lemma TODO for the proof of the equations below
+const AJCC jorgensen_yw(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC shLy2 = p.sinhL2;
+    AJCC td = w.a - w.d;
+    AJCC z = w.c * p.expD2 - w.b * p.expmD2;
+    return (abs(td * td - z * z) + 4) * abs_sqrd(shLy2);
+}
+
+// Returns the value of Jorgensen's inequality for w, y
+// See Lemma TODO for the proof of the equations below
+const AJCC jorgensen_wy(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC shLy2 = p.sinhL2;
+    AJCC tr = w.a + w.d;
+    AJCC td = w.a - w.d;
+    AJCC z = w.c * p.expD2 - w.b * p.expmD2;
+    return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLy2);
+}
+
+// Returns true if one of the following holds
+//   (1.1) <y, w> generate an elementray group, so the tubes intersect
+//     (1.1.1) x and w fail Jorgensen's inequality
+//     (1.1.2) w and x fail Jorgensen's inequality
+//   (1.3) tube(y) and w(tube(y)) intersect for geometric reasons
+inline const bool inside_var_nbd_y(const SL2AJCC& w, const AJCCParams& params) {
+    return absUB(jorgensen_wy(w, params)) < 1 ||
+        absUB(jorgensen_yw(w, params)) < 1 ||
+        must_fix_y_axis(w, params);
+}
+
+// Returns true if axis(y) and w(axis(y)) are not the same oriented geodesic.
 inline const bool cant_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
     AJCC fsp2sq = four_sinh_perp2_sq_ay_way(w, p);
     // return absLB(fsp2sq) > 0 && absLB(fsp2sq + 4) > 0; 
     return absLB(fsp2sq) > 0; 
 }
 
+// Returns true if wvWV is not the identity
+inline bool do_not_commute(const SL2AJCC& w, const SL2AJCC& v) {
+    // We simply check the commutator is not the idenity in the box 
+    SL2AJCC commutator = v * w * inverse(w * v);
+    return not_identity(commutator); 
+}
+
+// Verifies that w(tube(y)) hits tube(y), but <y, w> cannot to be a subgroup of a discrete
+// torsion free group. See heading for details. 
 void verify_y_hits_y(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(inside_var_nbd_y(w, box.cover) &&
-            (syllables(word) < 4 || cant_fix_y_axis(w, box.cover)),
-            where);
-}
-
-void verify_x_not_cyclic(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC x = construct_x(box.cover);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(inside_var_nbd_x(w, box.cover) &&
-            non_cyclic_power(w, x),
-            where);
-}
-
-void verify_y_not_cyclic(const char* where, const char* word) {
     Box box = build_box(where);
     SL2AJCC y = construct_y(box.cover);
     SL2AJCC w = construct_word(box.cover, word);
     check(inside_var_nbd_y(w, box.cover) &&
-            non_cyclic_power(w, y),
+            (syllables(word) < 4 || cant_fix_y_axis(w, box.cover) || do_not_commute(w, y)),
             where);
 }
 
+//*** Meyerhoff lower bound test ***//
 
-// 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
-inline const AJCC two_sinh_perp2_sq_wax_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC one = AJCC(1);
-    return (w.b * w.d) * p.expD2 - (w.a * w.c) * p.expmD2 - one; 
-}
+// Here we verify that the maximal tube around axis(y) is smaller than
+// the one guaranteed by Meyerhoff in Theorem 1 of Section 3 of
+// "A Lower Bound for the Volume of Hyperbolic 3-Manifolds."
 
-// 2 sinh^2(half complex distance between w(axis(y)) and (0, inf)) 
-inline const AJCC two_sinh_perp2_sq_way_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC one = AJCC(1);
-    return (w.b * w.d) * p.expmD2 - (w.a * w.c) * p.expD2 - one; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(x)) and (-1, 1)) 
-inline const AJCC four_sinh_perp2_sq_wax_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC two = AJCC(2);
-    return (w.d * w.d - w.b * w.b) * p.expD2 + (w.a * w.a - w.c * w.c) * p.expmD2 - two; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(y)) and (-1, 1)) 
-inline const AJCC four_sinh_perp2_sq_way_mp_one(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC two = AJCC(2);
-    return (w.d * w.d - w.b * w.b) * p.expmD2 + (w.a * w.a - w.c * w.c) * p.expD2 - two; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(x)) and (-i, i)) 
-inline const AJCC four_sinh_perp2_sq_wax_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC two = AJCC(2);
-    AJCC iye = eye(AJCC(1));
-    return ((w.d * w.d + w.b * w.b) * p.expD2 - (w.a * w.a + w.c * w.c) * p.expmD2) * iye - two; 
-}
-
-// 2 sinh^2(half complex distance between w(axis(y)) and (-i, i)) 
-inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC two = AJCC(2);
-    AJCC iye = eye(AJCC(1));
-    return ((w.d * w.d + w.b * w.b) * p.expmD2 - (w.a * w.a + w.c * w.c) * p.expD2) * iye - two; 
-}
-
-inline const bool not_identity(const SL2AJCC& w) {
-    return absLB(w.b) > 0 ||  absLB(w.c) > 0 ||
-        ((absLB(w.a-1) > 0 || absLB(w.d-1) > 0) && (absLB(w.a+1) > 0 || absLB(w.d+1) > 0));
-}
-
-
-// Given input z = 2 sinh^2(perp/2) returns
-//      2 cosh(re(perp)) = |z + 2| + |z|
-// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
-// to be the complex orthodistance between axes and dist = re(perp).
-const AJCC two_cosh_dist(const AJCC& two_sinh_sq_perp2) {
-    return abs(two_sinh_sq_perp2 + 2) + abs(two_sinh_sq_perp2);
-}
-
-inline const bool tube_hits_axis_two(const AJCC& two_sinh_p2sq, const AJCC& two_cosh_re_tube) {
-    AJCC tcd = two_cosh_dist(two_sinh_p2sq);
-    // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
-    return strictly_pos(two_cosh_re_tube - tcd) && absLB(two_sinh_p2sq + 1) > 0;
-}
-
-
-// Given input z = 4 sinh^2(perp/2) returns
-//      4 cosh(re(perp)) = |z + 4| + |z|
-// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
-const AJCC four_cosh_dist(const AJCC& four_sinh_sq_perp2) {
-    return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
-}
-
-inline const bool tube_hits_axis_four(const AJCC& four_sinh_p2sq, const AJCC& two_cosh_re_tube) {
-    AJCC fcd = four_cosh_dist(four_sinh_p2sq);
-    // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
-    return strictly_pos(two_cosh_re_tube * 2 - fcd) && absLB(four_sinh_p2sq + 2) > 0;
-}
-
-
-inline const bool wx_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC tsp2sq_inf = two_sinh_perp2_sq_wax_zero_inf(w, p);
-    AJCC fsp2sq_one = four_sinh_perp2_sq_wax_mp_one(w, p);
-    AJCC fsp2sq_iye = four_sinh_perp2_sq_wax_mp_iye(w, p);
-    return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
-            tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
-            tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
-}
-
-inline const bool wy_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC tsp2sq_inf = two_sinh_perp2_sq_way_zero_inf(w, p);
-    AJCC fsp2sq_one = four_sinh_perp2_sq_way_mp_one(w, p);
-    AJCC fsp2sq_iye = four_sinh_perp2_sq_way_mp_iye(w, p);
-    return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
-            tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
-            tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
-}
-
-
-// Mobius transforamtion
-inline const AJCC mobius(const SL2AJCC &w, const AJCC &z) {
-    return ((w.a * z) + w.b) / ((w.c * z) + w.d);
-}
-
-inline const bool does_not_fix_sym_axis(const SL2AJCC& w) {
-    AJCC one(1);
-    AJCC zero(0);
-    AJCC iye(0,1);
-    return (absLB(w.b) > 0 && absLB(w.d) > 0) 
-        || (absLB(w.a) > 0 && absLB(w.c) > 0) ||
-        (absLB(mobius(w, one) - one) > 0 && absLB(mobius(w, one) + one) > 0) || 
-        (absLB(mobius(w, iye) - iye) > 0 && absLB(mobius(w, iye) + iye) > 0) || 
-        (absLB(mobius(w, -one) - one) > 0 && absLB(mobius(w, -one) + one) > 0) || 
-        (absLB(mobius(w, -iye) - iye) > 0 && absLB(mobius(w, -iye) + iye) > 0); 
-}
-
-void verify_w_ax_hits_sym_axis(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(wx_hits_sym_axis(w, box.cover),
-            where);
-} 
-
-void verify_w_ay_hits_sym_axis(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(wy_hits_sym_axis(w, box.cover),
-            where);
-} 
-
-
-inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC diff = cosh_move_j(construct_x(p)) - cosh_move_j(w);
-    return strictly_pos(diff); 
-}
-
-inline bool non_cyclic_power(const SL2AJCC& w, const SL2AJCC& x_or_y) {
-    // Assume word fixes the same axis as x or y, so it must live in a cyclic group with x or y.
-    // We simply check the commutator is not the idenity in the box 
-    SL2AJCC commutator = x_or_y * w * inverse(w * x_or_y);
-    return not_identity(commutator); 
-}
-
-inline assert_correct_branch(AJCCParams& p) {
-
-}
-
-// Meyerhoff k-test
+// TODO Remove the while and make explicit
 #define MAX_MEYER 8
-bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_diam_UB) {
+bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_rad_UB) {
     // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
     AJCC ch_prev = AJCC(1);
     AJCC cs_prev = AJCC(1);
     AJCC ch = ch_o;
     AJCC cs = cs_o;
-    AJCC temp, four_cosh_tube_diam_LB;
+    AJCC temp, four_cosh_tube_rad_LB;
     AJCC meyer_k = AJCC(1024); // arbitray large enough number
     int count = 0;
     while (absUB(ch * ch) < 2 && count < MAX_MEYER) {
-        temp = ch - cs; 
+        temp = ch - cs;
         if (strictly_pos(meyer_k - temp) && absUB((temp + 1) * (temp + 1)) < 2) {
             meyer_k = temp;
             // See Meyerhoff paper on volume lowerbounds for hyperbolic 3-manifolds
-            four_cosh_tube_diam_LB = sqrt(-(meyer_k * 32) + 16) / meyer_k;
-            if (strictly_pos(four_cosh_tube_diam_LB - four_cosh_tube_diam_UB)) {
+            four_cosh_tube_rad_LB = sqrt(-(meyer_k * 32) + 16) / meyer_k;
+            if (strictly_pos(four_cosh_tube_rad_LB - four_cosh_tube_rad_UB)) {
+                fprintf(stderr, "Meyer count: %d\n", count); 
                 return true; // box can be killed
             }
         } 
@@ -632,70 +395,136 @@ bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_
     return false; // inconclusive
 }
 
-#define MAX_ROOTS 8
-AJCC worst_primitive_cosh_re_len(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_diam_UB) {
-    // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
-    AJCC ch_prev = ch_o;
-    AJCC cs_prev = cs_o;
-    for (int i = 0; i < MAX_ROOTS; ++i) {
-        AJCC ch = sqrt((ch_prev + 1) / 2);
-        AJCC cs = sqrt((cs_prev + 1) / 2); // note, - pi <= Im(L) <= pi, so sign is +
-        if (meyerhoff_k_test(ch, cs, four_cosh_tube_diam_UB)) {
-            return ch_prev;
-        }
-        ch_prev = ch;
-        cs_prev = cs;
-    }
-    // no luck
-    AJCC zero(0);
-    return zero; 
-}
-
 // Meyerhoff tube bound.
 // Checks if embeded tube about axis(x) is more than (dist(axis(x), y axis(x))
 // and similarly for axis(y)
 void verify_meyerhoff(const char* where) {
     Box box = build_box(where);
     SL2AJCC x = construct_x(box.cover);
-    SL2AJCC y = construct_y(box.cover);
-    AJCC four_cosh_x_tube_UB = four_cosh_dist_ax_wax(y, box.cover);
     AJCC four_cosh_y_tube_UB = four_cosh_dist_ay_way(x, box.cover);
-    check(
-            meyerhoff_k_test(box.cover.coshreL, box.cover.cosimL, four_cosh_x_tube_UB) ||
-            meyerhoff_k_test(box.cover.coshreL, box.cover.cosimL, four_cosh_y_tube_UB),
+    check(meyerhoff_k_test(box.cover.coshreL, box.cover.cosimL, four_cosh_y_tube_UB),
             where);
 }
 
+//** Margulis number contradiciton **// 
+
+//*** Word moves Margulis point less than Margulis number ***//
+
+// Our parametrization forces 1j to be the Margulis point in the upper half space
+// and the Margulis number to be the distance x or y move 1j. This section validates
+// that the givn word w moves the Margulis point less, meaning the Margulis number is
+// stricktly smaller.
+
+
+// Returns true if w moves 1j less than x does over the entire box 
+inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC diff = cosh_move_j(construct_x(p)) - cosh_move_j(w);
+    return strictly_pos(diff); 
+}
+
+// Verifies all three of following:
+//      (1) w moves j less than x
+//      (2) w is not the identity
 void verify_move(const char* where, const char* word) {
     Box box = build_box(where);
     SL2AJCC w = construct_word(box.cover, word);
-    check(not_identity(w) &&
-            move_less_than_marg(w, box.cover) &&
-            ((x_power(word) == 0 || y_power(word) == 0) || does_not_fix_sym_axis(w)),
+    check(move_less_than_marg(w, box.cover) &&
+            not_identity(w),
             where);
 }
 
-inline bool is_impossible(const char* word) {
-    int len = sizeof(impossible)/sizeof(impossible[0]);
-    assert(len == 134);
-    for (int i = 0; i < len; ++i) {
-        if (strncmp(word, impossible[i], 32) == 0) {
-            return true;
-        }
-    }
-    return false;
+//*** Word moves tube(y) to intersect an axis of symmetry ***//
+
+// Our parametrization has three axes of involution: (0, inf), (-1, 1), and (-i, i)
+//      The involution around (0, inf) maps x -> X and y -> Y.
+//      The involution around (-1, 1) maps x -> y and y -> x.
+//      The involution around (-i, i) maps x -> Y and y -> X.
+// In particular, if w(tube(y)) hits any of these axes and the angle is not pi/2,
+// then wyW and inv(wyW) will be distinct and have a better Margulis number than x and y.
+
+// Returns
+//      2 sinh^2(half complex distance between w(axis(y)) and (0, inf)) 
+// See Lemma TODO for formula
+inline const AJCC two_sinh_perp2_sq_way_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC one = AJCC(1);
+    return (w.b * w.d) * p.expmD2 - (w.a * w.c) * p.expD2 - one; 
 }
 
-inline bool is_symmetric_relator(const char* word) {
-    int len = sizeof(symmetric)/sizeof(symmetric[0]);
-    assert(len == 14);
-    for (int i = 0; i < len; ++i) {
-        if (strncmp(word, symmetric[i], 32) == 0) {
-            return true;
-        }
-    }
-    return false;
+// Returns
+//      2 sinh^2(half complex distance between w(axis(y)) and (-1, 1)) 
+// See Lemma TODO for formula 
+inline const AJCC four_sinh_perp2_sq_way_mp_one(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC two = AJCC(2);
+    return (w.d * w.d - w.b * w.b) * p.expmD2 + (w.a * w.a - w.c * w.c) * p.expD2 - two; 
 }
+
+// Returns
+//      2 sinh^2(half complex distance between w(axis(y)) and (-i, i)) 
+// See Lemma TODO for formula 
+inline const AJCC four_sinh_perp2_sq_way_mp_iye(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC two = AJCC(2);
+    AJCC iye = eye(AJCC(1));
+    return ((w.d * w.d + w.b * w.b) * p.expmD2 - (w.a * w.a + w.c * w.c) * p.expD2) * iye - two; 
+}
+
+// Given input 2 sinh^2(perp/2) = z returns
+//      2 cosh(re(perp)) = |z + 2| + |z|
+// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
+// to be the complex orthodistance between axes and dist = re(perp).
+const AJCC two_cosh_dist(const AJCC& two_sinh_sq_perp2) {
+    return abs(two_sinh_sq_perp2 + 2) + abs(two_sinh_sq_perp2);
+}
+
+// Given input 2 sinh^2(perp/2) and 2 cosh(tube radius), returns true if re(perp) < tube radius
+// Note, we assume there that perp = complex distance between w(axis(y)) and an axis of symmetry
+inline const bool tube_hits_axis_two(const AJCC& two_sinh_p2sq, const AJCC& two_cosh_re_tube) {
+    AJCC tcd = two_cosh_dist(two_sinh_p2sq);
+    // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
+    return strictly_pos(two_cosh_re_tube - tcd) && absLB(two_sinh_p2sq + 1) > 0;
+}
+
+// Given input z = 4 sinh^2(perp/2) returns
+//      4 cosh(re(perp)) = |z + 4| + |z|
+// by the |cosh|^2 and |sinh^2| formulas. Note, here perp is meant
+const AJCC four_cosh_dist(const AJCC& four_sinh_sq_perp2) {
+    return abs(four_sinh_sq_perp2 + 4) + abs(four_sinh_sq_perp2);
+}
+
+// Given input 4 sinh^2(perp/2) and 2 cosh(tube radius), returns true if re(perp) < tube radius
+// Note, we assume there that perp = complex distance between w(axis(y)) and an axis of symmetry
+inline const bool tube_hits_axis_four(const AJCC& four_sinh_p2sq, const AJCC& two_cosh_re_tube) {
+    AJCC fcd = four_cosh_dist(four_sinh_p2sq);
+    // sinh(I Pi/4)^2 = -1/2 which means axes meet othrogonally
+    return strictly_pos(two_cosh_re_tube * 2 - fcd) && absLB(four_sinh_p2sq + 2) > 0;
+}
+
+// Return true if w(tube(y)) hits, non-orthogonally, one of the three symmetry axes
+inline const bool wy_hits_sym_axis(const SL2AJCC& w, const AJCCParams& p) {
+    AJCC tsp2sq_inf = two_sinh_perp2_sq_way_zero_inf(w, p);
+    AJCC fsp2sq_one = four_sinh_perp2_sq_way_mp_one(w, p);
+    AJCC fsp2sq_iye = four_sinh_perp2_sq_way_mp_iye(w, p);
+    return (tube_hits_axis_two(tsp2sq_inf, p.twocoshreD2) ||
+            tube_hits_axis_four(fsp2sq_one, p.twocoshreD2) || 
+            tube_hits_axis_four(fsp2sq_iye, p.twocoshreD2));
+}
+
+// Verifies that w(tube(y)) his one of the symmetry axes non-orthogonally
+void verify_w_ay_hits_sym_axis(const char* where, const char* word) {
+    Box box = build_box(where);
+    SL2AJCC w = construct_word(box.cover, word);
+    check(wy_hits_sym_axis(w, box.cover),
+            where);
+} 
+
+//** Relator elimination **//
+
+// Here we use a function that proves a given word w
+// is a relator for any discrete point in the box (if any)
+// To achieve this, we test the following:
+//   (1) w passes the variety neighborhood condition in the box.
+//          In particular, w and y commute.
+//   (2) w has translation length smaller than the smallest posible
+//          primitive root of y, which is computed using the Meyerhoff tube test.
 
 
 // Returns 4 cosh(real_translation_length(w))) = 
@@ -708,18 +537,39 @@ const AJCC four_cosh_re_length(const SL2AJCC& w) {
     return abs_sqrd(tr) + abs(tr*tr - 4);
 }
 
-bool is_proven_elementary(const char* word, const AJCCParams& p) {
+// Given the values ch_o = cosh(re(L)) and cs_0 = cos(Im(L)) and an upper bound on an embedded tube
+// around the element with translation length L, compute a lower bound on the real translation
+// length of the primitive root of this element. This last part is done by using the Meyerhoff test,
+// where we know a lower bound on the emebedded tube radius about a short geodesic.
+#define MAX_ROOTS 8
+AJCC worst_primitive_cosh_re_len(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_rad_UB) {
+    // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
+    AJCC ch_prev = ch_o;
+    AJCC cs_prev = cs_o;
+    for (int i = 0; i < MAX_ROOTS; ++i) {
+        AJCC ch = sqrt((ch_prev + 1) / 2);
+        AJCC cs = sqrt((cs_prev + 1) / 2); // note, - pi <= Im(L) <= pi, so sign is +
+        if (meyerhoff_k_test(ch, cs, four_cosh_tube_rad_UB)) {
+            fprintf(stderr, "Primitive root count: %d\n", i); 
+            return ch_prev;
+        }
+        ch_prev = ch;
+        cs_prev = cs;
+    }
+    // no luck
+    AJCC zero(0);
+    return zero; 
+}
+
+// Validates that word is a relator at every discrete torsion-free points in the box.
+// Is is accomplished by showing that <word, y> generates an elementary group.
+// And that the translation length of word is less than the primitive root of y.
+// In conjuction with the torsion-free and discrete assumttions, the two facts above
+// imply that word cannot be parabolic, elliptic, or loxodormic, meaning it is th identity 
+bool is_proven_relator(const char* word, const AJCCParams& p) {
     SL2AJCC x = construct_x(p);
     SL2AJCC y = construct_y(p);
     SL2AJCC w = construct_word(p, word);
-    if (y_power(word) > 0 && inside_var_nbd_x(w, p)) {
-        AJCC four_cosh_x_tube_UB = four_cosh_dist_ax_wax(y, p);
-        AJCC cosh_prim_re_len = worst_primitive_cosh_re_len(p.coshreL, p.cosimL, four_cosh_x_tube_UB); 
-        AJCC diff = cosh_prim_re_len * 4 - four_cosh_re_length(w);
-        if (strictly_pos(diff)) {
-            return true;
-        }      
-    }
     if (x_power(word) > 0 && inside_var_nbd_y(w, p)) {
         AJCC four_cosh_y_tube_UB = four_cosh_dist_ay_way(x, p);
         AJCC cosh_prim_re_len = worst_primitive_cosh_re_len(p.coshreL, p.cosimL, four_cosh_y_tube_UB); 
@@ -731,40 +581,70 @@ bool is_proven_elementary(const char* word, const AJCCParams& p) {
     return false;
 }
 
+//*** Impossible relators ***//
 
+// Here we check that the given word is (1) a proven relator and
+// (2) is a word that is impossible by means of analysis in Lemma TODO
+
+inline bool is_impossible(const char* word) {
+    int len = sizeof(impossible)/sizeof(impossible[0]);
+    assert(len == 134);
+    for (int i = 0; i < len; ++i) {
+        if (strncmp(word, impossible[i], 32) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Verifies that the word is (1) on the impossible list and (2) is a proven relator
 void verify_impossible_relator(const char* where, const char* word) {
     Box box = build_box(where);
-    if (!(is_impossible(word) &&
-                is_proven_elementary(word, box.cover))) {
-        fprintf(stderr, "At %s\n", where);
-        print_box(box);
-        fprintf(stderr, "generator x is\n");
-        print_type(construct_x(box.cover));
-        fprintf(stderr, "generator y is\n");
-        print_type(construct_y(box.cover));
-        fprintf(stderr, "word %s is\n", word);
-        print_type(construct_word(box.cover, word));
-        fprintf(stderr, "Check: (1) %d and (2) %d\n",
-                is_impossible(word),
-                is_proven_elementary(word, box.cover));
-    }
     check(is_impossible(word) &&
-            is_proven_elementary(word, box.cover),
+            is_proven_relator(word, box.cover),
             where); 
 }
 
-void verify_symmetric_relator(const char* where, const char* word) {
+//*** Weeks relators ***//
+
+// Symmetric relators are special in that the group <x, y| w, inv(w)> is a known
+// closed 3-manifold group. So, if w is a proven relator, then so is inv(w) and we
+// have idenitified a subgroup of the group generated by x,y. In all cases,
+// this group is provably the Weeks manifold, so by volumes of representations,
+// it follows that x,y generate the Weeks manifold (at the discrete torsion free points)
+
+// Checks tha the word is on the list of Weeks relators
+// See Lemma TODO for the proof of why these relators are Weeks
+inline bool is_weeks_relator(const char* word) {
+    int len = sizeof(weeks)/sizeof(weeks[0]);
+    assert(len == 14);
+    for (int i = 0; i < len; ++i) {
+        if (strncmp(word, weeks[i], 32) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Verifies that the word is (1) on the symmetirc list and (2) a relator. 
+void verify_weeks(const char* where, const char* word) {
     Box box = build_box(where);
-    check(is_symmetric_relator(word) &&
-            is_proven_elementary(word, box.cover),
+    check(is_weeks_relator(word) &&
+            is_proven_relator(word, box.cover),
             where); 
 }
 
+//*** Vol3 relators ***//
+
+// We check that XYXYxYXYXy and yXYxYxyxYxYY are proven relators
+// for the box. By Lemma TODO, this means that vol3 is a subgroup of the group
+// generated by x,y at any discrete point. Again, volume considerations imply that
+// any discrete torsion free point must be vol3 on the nose.
 void verify_vol3(const char* where, const char* first, const char* second) {
     Box box = build_box(where);
     check(strncmp(first, "XYXYxYXYXy", 32) == 0 &&
             strncmp(second, "yXYxYxyxYxYY", 32) == 0 &&
-            is_proven_elementary(first, box.cover) &&
-            is_proven_elementary(second, box.cover),
+            is_proven_relator(first, box.cover) &&
+            is_proven_relator(second, box.cover),
             where); 
 }

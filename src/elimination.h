@@ -31,27 +31,17 @@ void verify_out_of_bounds(const char* where, char bounds_code);
 
 void verify_meyerhoff(const char* where);
 
-void verify_x_hits_y(const char* where, const char* word);
-
 void verify_y_hits_x(const char* where, const char* word);
-
-void verify_x_hits_x(const char* where, const char* word);
 
 void verify_y_hits_y(const char* where, const char* word);
 
-void verify_x_not_cyclic(const char* where, const char* word);
-
-void verify_y_not_cyclic(const char* where, const char* word);
-
 void verify_move(const char* where, const char* word);
-
-void verify_w_ax_hits_sym_axis(const char* where, const char* word);
 
 void verify_w_ay_hits_sym_axis(const char* where, const char* word);
 
 void verify_impossible_relator(const char* where, const char* word);
 
-void verify_symmetric_relator(const char* where, const char* word);
+void verify_weeks(const char* where, const char* word);
 
 void verify_vol3(const char* where, const char* first, const char* second);
 
