@@ -440,6 +440,25 @@ void verify_y_hits_y(const char* where, const char* word) {
             where);
 }
 
+void verify_x_not_cyclic(const char* where, const char* word) {
+    Box box = build_box(where);
+    SL2AJCC x = construct_x(box.cover);
+    SL2AJCC w = construct_word(box.cover, word);
+    check(inside_var_nbd_x(w, box.cover) &&
+            non_cyclic_power(w, x),
+            where);
+}
+
+void verify_y_not_cyclic(const char* where, const char* word) {
+    Box box = build_box(where);
+    SL2AJCC y = construct_y(box.cover);
+    SL2AJCC w = construct_word(box.cover, word);
+    check(inside_var_nbd_y(w, box.cover) &&
+            non_cyclic_power(w, y),
+            where);
+}
+
+
 // 2 sinh^2(half complex distance between w(axis(x)) and (0, inf)) 
 inline const AJCC two_sinh_perp2_sq_wax_zero_inf(const SL2AJCC& w, const AJCCParams& p) {
     AJCC one = AJCC(1);
@@ -549,6 +568,20 @@ inline const bool does_not_fix_sym_axis(const SL2AJCC& w) {
         (absLB(mobius(w, -iye) - iye) > 0 && absLB(mobius(w, -iye) + iye) > 0); 
 }
 
+void verify_w_ax_hits_sym_axis(const char* where, const char* word) {
+    Box box = build_box(where);
+    SL2AJCC w = construct_word(box.cover, word);
+    check(wx_hits_sym_axis(w, box.cover),
+            where);
+} 
+
+void verify_w_ay_hits_sym_axis(const char* where, const char* word) {
+    Box box = build_box(where);
+    SL2AJCC w = construct_word(box.cover, word);
+    check(wy_hits_sym_axis(w, box.cover),
+            where);
+} 
+
 
 inline bool move_less_than_marg(const SL2AJCC& w, const AJCCParams& p) {
     AJCC diff = cosh_move_j(construct_x(p)) - cosh_move_j(w);
@@ -633,24 +666,6 @@ void verify_meyerhoff(const char* where) {
             where);
 }
 
-void verify_x_not_cyclic(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC x = construct_x(box.cover);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(inside_var_nbd_x(w, box.cover) &&
-            non_cyclic_power(w, x),
-            where);
-}
-
-void verify_y_not_cyclic(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC y = construct_y(box.cover);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(inside_var_nbd_y(w, box.cover) &&
-            non_cyclic_power(w, y),
-            where);
-}
-
 void verify_move(const char* where, const char* word) {
     Box box = build_box(where);
     SL2AJCC w = construct_word(box.cover, word);
@@ -659,20 +674,6 @@ void verify_move(const char* where, const char* word) {
             ((x_power(word) == 0 || y_power(word) == 0) || does_not_fix_sym_axis(w)),
             where);
 }
-
-void verify_w_ax_hits_sym_axis(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(wx_hits_sym_axis(w, box.cover),
-            where);
-} 
-
-void verify_w_ay_hits_sym_axis(const char* where, const char* word) {
-    Box box = build_box(where);
-    SL2AJCC w = construct_word(box.cover, word);
-    check(wy_hits_sym_axis(w, box.cover),
-            where);
-} 
 
 inline bool is_impossible(const char* word) {
     int len = sizeof(impossible)/sizeof(impossible[0]);
