@@ -588,7 +588,7 @@ bool is_proven_relator(const char* word, const AJCCParams& p) {
 
 inline bool is_impossible(const char* word) {
     int len = sizeof(impossible)/sizeof(impossible[0]);
-    assert(len == 134);
+    assert(len == 66);
     for (int i = 0; i < len; ++i) {
         if (strncmp(word, impossible[i], 32) == 0) {
             return true;
@@ -617,7 +617,7 @@ void verify_impossible_relator(const char* where, const char* word) {
 // See Lemma TODO for the proof of why these relators are Weeks
 inline bool is_weeks_relator(const char* word) {
     int len = sizeof(weeks)/sizeof(weeks[0]);
-    assert(len == 14);
+    assert(len == 4);
     for (int i = 0; i < len; ++i) {
         if (strncmp(word, weeks[i], 32) == 0) {
             return true;
