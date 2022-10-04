@@ -568,7 +568,6 @@ AJCC worst_primitive_cosh_re_len(const AJCC& ch_o, const AJCC& cs_o, const AJCC&
 // imply that word cannot be parabolic, elliptic, or loxodormic, meaning it is th identity 
 bool is_proven_relator(const char* word, const AJCCParams& p) {
     SL2AJCC x = construct_x(p);
-    SL2AJCC y = construct_y(p);
     SL2AJCC w = construct_word(p, word);
     if (x_power(word) > 0 && inside_var_nbd_y(w, p)) {
         AJCC four_cosh_y_tube_UB = four_cosh_dist_ay_way(x, p);
