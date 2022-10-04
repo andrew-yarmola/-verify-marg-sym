@@ -1,8 +1,8 @@
 // Complete list of impossible relators. See article for reasons for why 
 char impossible[66][32] = {
-  "XyXy",
   "yxYX",
   "yXYx",
+  "YxYx",
   "xyxxyx",
   "xYxxYx",
   "yxyxyx",
@@ -65,12 +65,12 @@ char impossible[66][32] = {
   "YXYXyXYXYXyX",
   "yyyXyXyyyXyX",
   "YxxYYYYxxxYxxYYYYxxx",
-  "yyyxxxxyyxyyyxxxxyyx"
+  "yyyxxxxyyxyyyxxxxyyx",
 };
 
 char weeks[4][32] = {
-  "XXYYxYxYY",
-  "XXyyxyxyy",
+  "XXyyXXYXY",
   "YXYxYYxYX",
+  "xxyyxxYxY",
   "yxyyxyXyX"
 };
