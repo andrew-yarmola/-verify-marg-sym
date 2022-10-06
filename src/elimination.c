@@ -362,7 +362,7 @@ void verify_y_hits_y(const char* where, const char* word) {
 // "A Lower Bound for the Volume of Hyperbolic 3-Manifolds."
 
 // TODO Remove the while and make explicit
-#define MAX_MEYER 8
+#define MAX_MEYER 7
 bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_rad_UB) {
     // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
     AJCC ch_prev = AJCC(1);
@@ -387,7 +387,7 @@ bool meyerhoff_k_test(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_
         temp = (ch_o * 2) * ch - ch_prev;
         ch_prev = ch;
         ch = temp;  
-        AJCC temp = (cs_o * 2) * cs - cs_prev;
+        temp = (cs_o * 2) * cs - cs_prev;
         cs_prev = cs;
         cs = temp;
         count +=1;
@@ -541,7 +541,7 @@ const AJCC four_cosh_re_length(const SL2AJCC& w) {
 // around the element with translation length L, compute a lower bound on the real translation
 // length of the primitive root of this element. This last part is done by using the Meyerhoff test,
 // where we know a lower bound on the emebedded tube radius about a short geodesic.
-#define MAX_ROOTS 8
+#define MAX_ROOTS 2
 AJCC worst_primitive_cosh_re_len(const AJCC& ch_o, const AJCC& cs_o, const AJCC& four_cosh_tube_rad_UB) {
     // Assumed ch and cs are real valued jets for cosh(Re(L)) and cos(Im(L))
     AJCC ch_prev = ch_o;
