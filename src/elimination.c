@@ -216,8 +216,8 @@ void verify_out_of_bounds(const char* where, char bounds_code)
 //      4 cosh(real distance between axis(x) and w(axis(y))) 
 //  See Lemma TODO for formula.
 const AJCC four_cosh_dist_ax_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
-        ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
+    AJCC z = ((w.a * w.a) * (p.expD2 * p.expD2) - w.b * w.b) +
+        ((w.d * w.d) * (p.expmD2 * p.expmD2) - w.c * w.c);
     return  abs(z - 2) + abs(z + 2);
 }
 
@@ -234,8 +234,8 @@ inline const bool moves_y_axis_too_close_to_x(const SL2AJCC& w, const AJCCParams
 //      4 sinh^2(half complex distance between axis(x) and w(axis(y))) 
 //  See Lemma TODO for formula.
 const AJCC four_sinh_perp2_sq_ax_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
-        ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
+    AJCC z = ((w.a * w.a) * (p.expD2 * p.expD2) - w.b * w.b) +
+        ((w.d * w.d) * (p.expmD2 * p.expmD2) - w.c * w.c);
     return z - 2;
 }
 
