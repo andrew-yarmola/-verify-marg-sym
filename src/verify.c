@@ -63,7 +63,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
     if (*count_ptr % (1 << 18) == 0 && code[0] != 'X') {
         #define PBSTR "++++++++++++++++++++++++++++++++++++++++++++++++++"
         #define PBWIDTH 50
-        #define NUM_NODES 725314605 
+        #define NUM_NODES 52726055 
         double fraction = ((double) *count_ptr) / NUM_NODES;
         int lpad = (int) (fraction * PBWIDTH);
         int rpad = PBWIDTH - lpad;

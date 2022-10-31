@@ -216,8 +216,8 @@ void verify_out_of_bounds(const char* where, char bounds_code)
 //      4 cosh(real distance between axis(x) and w(axis(y))) 
 //  See Lemma TODO for formula.
 const AJCC four_cosh_dist_ax_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * (p.expD2 * p.expD2) - w.b * w.b) +
-        ((w.d * w.d) * (p.expmD2 * p.expmD2) - w.c * w.c);
+    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
+        ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
     return  abs(z - 2) + abs(z + 2);
 }
 
@@ -234,8 +234,8 @@ inline const bool moves_y_axis_too_close_to_x(const SL2AJCC& w, const AJCCParams
 //      4 sinh^2(half complex distance between axis(x) and w(axis(y))) 
 //  See Lemma TODO for formula.
 const AJCC four_sinh_perp2_sq_ax_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC z = ((w.a * w.a) * (p.expD2 * p.expD2) - w.b * w.b) +
-        ((w.d * w.d) * (p.expmD2 * p.expmD2) - w.c * w.c);
+    AJCC z = ((w.a * w.a) * p.expD2  - (w.b * w.b) * p.expmD2) * p.expD2 +
+        ((w.d * w.d) * p.expmD2 - (w.c * w.c) * p.expD2 ) * p.expmD2;
     return z - 2;
 }
 
@@ -587,7 +587,7 @@ bool is_proven_relator(const char* word, const AJCCParams& p) {
 
 inline bool is_impossible(const char* word) {
     int len = sizeof(impossible)/sizeof(impossible[0]);
-    assert(len == 66);
+    assert(len == 151);
     for (int i = 0; i < len; ++i) {
         if (strncmp(word, impossible[i], 32) == 0) {
             return true;
@@ -641,9 +641,15 @@ void verify_weeks(const char* where, const char* word) {
 // any discrete torsion free point must be vol3 on the nose.
 void verify_vol3(const char* where, const char* first, const char* second) {
     Box box = build_box(where);
-    check(strncmp(first, "XYXYxYXYXy", 32) == 0 &&
-            strncmp(second, "yXYxYxyxYxYY", 32) == 0 &&
-            is_proven_relator(first, box.cover) &&
-            is_proven_relator(second, box.cover),
-            where); 
+    check((
+           (strncmp(first, "XYXyXyxyXy", 32) == 0 &&
+            strncmp(second, "XYXYxYXYXy", 32) == 0) ||
+           (strncmp(first, "XYXyXyxyXy", 32) == 0 &&
+            strncmp(second, "XYXyXYXYxY", 32) == 0) ||
+           (strncmp(first, "XyXYXYxYXY", 32) == 0 &&
+            strncmp(second, "XYXyXyxyXy", 32) == 0)
+          ) &&
+          is_proven_relator(first, box.cover) &&
+          is_proven_relator(second, box.cover),
+          where); 
 }
