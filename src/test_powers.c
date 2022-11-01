@@ -35,11 +35,11 @@ int main() {
     exit(-2);
   }
   if (strncmp(expected, buf, strlen(expected)) == 0) {
-    printf(buf);
+    printf("%s", buf);
     printf("Powers above are correct.\n");
     exit(0);
   } else {
-    printf(buf);
+    printf("%s", buf);
     printf("Error --  powers above are not correct!\n");
   }
   exit(-1);

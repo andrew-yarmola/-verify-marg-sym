@@ -277,10 +277,10 @@ void verify_y_hits_x(const char* where, const char* word) {
 //      4 sinh^2(half complex distance between axis(y) and w(axis(y))) 
 // See Lemma TOFO for the formula.
 const AJCC four_sinh_perp2_sq_ay_way(const SL2AJCC& w, const AJCCParams& p) {
-    AJCC td = w.a - w.d;
-    AJCC zm = w.c * p.expD2 - w.b * p.expmD2;
+    AJCC q = w.a - w.d;
+    AJCC z = w.c * p.expD2 - w.b * p.expmD2;
     // formula by using crossratios
-    AJCC four_sinh_sq_perp2 = td * td - zm * zm;  
+    AJCC four_sinh_sq_perp2 = q * q - z * z;  
     return four_sinh_sq_perp2; 
 }
 
@@ -304,19 +304,19 @@ inline const bool must_fix_y_axis(const SL2AJCC& w, const AJCCParams& p) {
 // See Lemma TODO for the proof of the equations below
 const AJCC jorgensen_yw(const SL2AJCC& w, const AJCCParams& p) {
     AJCC shLy2 = p.sinhL2;
-    AJCC td = w.a - w.d;
+    AJCC q = w.a - w.d;
     AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-    return (abs(td * td - z * z) + 4) * abs_sqrd(shLy2);
+    return (abs(q * q - z * z) + 4) * abs_sqrd(shLy2);
 }
 
 // Returns the value of Jorgensen's inequality for w, y
 // See Lemma TODO for the proof of the equations below
 const AJCC jorgensen_wy(const SL2AJCC& w, const AJCCParams& p) {
     AJCC shLy2 = p.sinhL2;
-    AJCC tr = w.a + w.d;
-    AJCC td = w.a - w.d;
+    AJCC t = w.a + w.d;
+    AJCC q = w.a - w.d;
     AJCC z = w.c * p.expD2 - w.b * p.expmD2;
-    return abs(tr * tr - 4) + abs(td * td - z * z) * abs_sqrd(shLy2);
+    return abs(t * t - 4) + abs(q * q - z * z) * abs_sqrd(shLy2);
 }
 
 // Returns true if one of the following holds

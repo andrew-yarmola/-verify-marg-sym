@@ -2,7 +2,7 @@
 
 pushd ../src
 # build
-make test_float
+make tests
 make rootcat
 make verify
 popd
