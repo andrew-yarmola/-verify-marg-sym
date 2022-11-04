@@ -20,7 +20,7 @@ To run the verification, from the `bin` direcotry execute:
 ```
 ./rootcat ../data/verify | ./verify
 ```
-Note, this process is long and take 10-15 hours to finish.
+Note, this process is long and take 0.5-1 hours to finish.
 
 For ease of use, script are provided in the scripts directory that perform the above calls alongside some pretty printing.
 
@@ -30,7 +30,7 @@ For ease of use, script are provided in the scripts directory that perform the a
 
 The arithmetic used in this repository is a modified version of the one published in "Homotopy hyperbolic 3-manifolds are hyperbolic."
 In particular, we change the dimensionality and add complex conjugation.
-This produces an arithemtic with 8 real parameters.
+This produces an arithemtic with 8 real parameters which approximates functions from D^2 -> C^2, where D is the unit disk in C.
 Note, in "Homotopy hyperbolic 3-manifolds are hyperbolic," the authors use `CWEB` to generate the source code.
 For the new code in this repository, we chose not to use `CWEB` as this adds an additonal step and dependency.
 Discussion of the details of the code are in the appendix of the main paper.
@@ -42,7 +42,7 @@ We use the arithmetic above to verify a binary tree, the leaf nodes of which rep
 ### rootcat
 
 This program reads the binary tree as stored in a collection of text `.out` files, or compressed `.out.tar.gz` versions, and prints the tree out to `stdin` in depth-first format.
-This data format was chosen because the dataset is quite large.
+This data format was chosen because dataset in such searches tend to be quite large.
 Each internal node is represented by an `X` and each leaf node includes an elinimation criterion that will be checked by `verify`.
 
 The code for `rootcat` is entirely contained in `rootcat.c`.
